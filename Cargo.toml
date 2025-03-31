@@ -2,7 +2,7 @@
 name = "brainstorm"
 description = "Neuroscience for Engineers"
 authors = ["j-stach"]
-version = "0.0.00"
+version = "0.0.0"
 edition = "2021"
 repository = "https://github.com/j-stach/brainstorm"
 license = "GPL-3.0"
