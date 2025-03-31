@@ -1,6 +1,11 @@
 [package]
 name = "brainstorm"
-version = "0.1.0"
+description = "Neuroscience for Engineers"
+authors = ["j-stach"]
+version = "0.0.00"
 edition = "2021"
+repository = "https://github.com/j-stach/brainstorm"
+license = "GPL-3.0"
+readme = "README.md"
 
 [dependencies]
