@@ -9,3 +9,5 @@ license = "GPL-3.0"
 readme = "README.md"
 
 [dependencies]
+clap = "4.5.36"
+clap-repl = "0.3.2"
