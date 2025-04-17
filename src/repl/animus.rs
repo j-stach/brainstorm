@@ -1,4 +1,8 @@
 
+// This aligns with the capabilities of the `cajal-animus` 
+// and executes the stored commands via the dedicated 4048 port.
+
+
 use clap::{ Parser, Subcommand };
 use clap_repl::{ ClapEditor, ReadCommandOutput };
 use clap_repl::reedline::{ DefaultPrompt, DefaultPromptSegment };
@@ -21,7 +25,8 @@ enum AnimusCommand {
     /// Retrieve the name of the Complex handled by the Animus.
     Name,
 
-    // TODO: Version
+    /// Retrieve the version of the Animus.
+    Version,
 
     /// List the names of all Structures in the Complex handled by the Animus.
     ListStructures,
@@ -54,25 +59,36 @@ pub(crate) fn animus_manager_repl(animus_name: &str) {
 
     let mut run_manager = true;
 
+    // Logic for commands:
     while run_manager {
         match inner_repl.read_command() {
             ReadCommandOutput::Command(cli) => match cli.command {
 
                 AnimusCommand::Name => {
                     // Get name from complex
+                    println!("Animus name is: ");
+                },
+
+                AnimusCommand::Version => {
+                    // Get name from complex
+                    println!("Animus version is: ");
                 },
 
                 AnimusCommand::ListStructures => {
                     // Get list of structures from complex
+                    println!("This animus contains the following structures: ");
                 },
 
                 AnimusCommand::Save => {
                     // Clone & save? 
                     // Save without stopping?
+                    println!("Saving network state...");
+                    println!("Done");
                 },
 
                 AnimusCommand::Vive => {
                     // Start processing inputs for the animus
+                    println!("It's Alive!");
                 },
 
                 AnimusCommand::RespiceFinem => {
@@ -97,4 +113,10 @@ pub(crate) fn animus_manager_repl(animus_name: &str) {
         }
     }
 
+}
+
+
+fn send_animus_command() {
+    // Send command to associated IP addr @ port 4048
+    // Get animus response and parse
 }

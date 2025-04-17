@@ -92,7 +92,8 @@ pub(crate) fn brainstorm_repl() {
             },
 
             Command::ListActive => {
-                // Query communication port for names and versions of any active animi, then collect and report list
+                // Query communication port for names and versions 
+                // then collect and report list
             },
 
             Command::ListAll => {
@@ -117,6 +118,8 @@ pub(crate) fn brainstorm_repl() {
                 // Check for animus in active list
                 super::animus::animus_manager_repl(&animus_name)
             },
+
+            // TODO: Remote lobe startup, connection
 
         }
     });
