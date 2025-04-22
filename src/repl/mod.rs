@@ -1,10 +1,11 @@
 
 /// The top-level REPL logic goes here.
 pub(crate) mod brainstorm;
-
-/// Sub-REPL for live configuration of Brainstorm.
-pub(crate) mod config;
+pub(crate) use brainstorm::brainstorm_repl;
 
 /// Sub-REPL for managing an existing Animus instance.
-pub(crate) mod animus;
+pub(self) mod animus;
+pub(self) use animus::animus_manager_repl;
+
+// TODO: Other REPL as needed
 

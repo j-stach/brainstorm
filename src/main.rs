@@ -1,12 +1,11 @@
 
-/// REPL logic goes here.
+mod setup;
 mod repl;
 
 fn main() {
-
-    // TODO: Setup/check 
-
+    // Set up the directory structure:
+    let _ = setup::directory_setup(); // TODO: Errors
     // Run the loop:
-    repl::brainstorm::brainstorm_repl();
+    repl::brainstorm_repl();
 }
 

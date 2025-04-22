@@ -11,6 +11,7 @@ readme = "README.md"
 [dependencies]
 clap = "4.5.36"
 clap-repl = "0.3.2"
+anyhow = "1.0.98"
 
 animusd = { path = "/home/jordan/projs/animusd" }
 

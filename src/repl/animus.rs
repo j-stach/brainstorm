@@ -44,6 +44,7 @@ enum AnimusCommand {
     Return,
 }
 
+
 // Spawns an inner REPL for sending animus commands.
 pub(crate) fn animus_manager_repl(animus_name: &str) {
     println!("Selected animus '{}'", animus_name);
@@ -65,17 +66,17 @@ pub(crate) fn animus_manager_repl(animus_name: &str) {
             ReadCommandOutput::Command(cli) => match cli.command {
 
                 AnimusCommand::Name => {
-                    // Get name from complex
+                    // TODO: Get name from complex
                     println!("Animus name is: ");
                 },
 
                 AnimusCommand::Version => {
-                    // Get name from complex
+                    // TODO: Get version from complex
                     println!("Animus version is: ");
                 },
 
                 AnimusCommand::ListStructures => {
-                    // Get list of structures from complex
+                    // TODO: Get list of structures from complex
                     println!("This animus contains the following structures: ");
                 },
 
@@ -87,12 +88,12 @@ pub(crate) fn animus_manager_repl(animus_name: &str) {
                 },
 
                 AnimusCommand::Vive => {
-                    // Start processing inputs for the animus
+                    // TODO: Start processing inputs for the animus
                     println!("It's Alive!");
                 },
 
                 AnimusCommand::RespiceFinem => {
-                    // Stop processing inputs, save, then deactivate
+                    // TODO: Stop processing inputs, save, then deactivate
 
                     println!("Memento mori");
                     run_manager = false
@@ -115,8 +116,9 @@ pub(crate) fn animus_manager_repl(animus_name: &str) {
 
 }
 
-
+// Helper function to send AnimusCommand via TCP and receive AnimusResponse in exchange.
 fn send_animus_command() {
     // Send command to associated IP addr @ port 4048
-    // Get animus response and parse
+    // Get animus response and parse results
 }
+

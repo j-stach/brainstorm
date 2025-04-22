@@ -62,13 +62,12 @@ View active Animi using the `list-active` command."
     /// List all `.nn` networks found in ~/.brainstorm/saved/.
     ListNetworks,
 
-    // TODO: CheckHealth
-    // TODO: Setup
-    // TODO: AddLobe
-
     /// Exit Brainstorm (This will not affect any active Animi).
     Quit,
+
+    // TODO: AddLobe
 }
+
 
 // Launch the top-level REPL and process commands.
 pub(crate) fn brainstorm_repl() {
@@ -87,36 +86,42 @@ pub(crate) fn brainstorm_repl() {
         match cli.command {
 
             Command::Quit => {
-                println!("Byee~");
+                // TODO: "There are X animi still running in the background."
+                println!("Goodbye!");
                 std::process::exit(0);
             },
 
             Command::ListActive => {
+                // TODO:
                 // Query communication port for names and versions 
                 // then collect and report list
             },
 
             Command::ListAll => {
+                // TODO:
                 // Read the ~/.brainstorm/animi directory for names
             },
 
             Command::ListNetworks => {
+                // TODO:
                 // Read the ~/.brainstorm/saved directory for names
             },
 
             Command::Animate {..} => {
+                // TODO:
                 // Search for network filename
                 // Build animus
             },
 
             Command::Load {..} => {
+                // TODO:
                 // Search for animus directory
                 // Load & run
             },
 
             Command::Select { animus_name } => {
                 // Check for animus in active list
-                super::animus::animus_manager_repl(&animus_name)
+                super::animus_manager_repl(&animus_name)
             },
 
             // TODO: Remote lobe startup, connection

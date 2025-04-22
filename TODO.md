@@ -1,7 +1,4 @@
 
-- [ ] Configuration files and configuration REPL
-- [ ] Check setup/checkhealth
-
 
 ## Distributed services
 - [ ] Connecting to Animi on other computers, with authentication (lobes) using SSH (prompt for password)
