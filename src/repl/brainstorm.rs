@@ -27,7 +27,7 @@ enum Command {
 Brainstorm will search for the file in ~/.brainstorm/saved/ before trying elsewhere.
 Use `list-networks` to view saved network filenames." 
         )]
-        filename: std::path::PathBuf
+        network: std::path::PathBuf
     },
 
     /// Load and activate an Animus that is saved on this device.
@@ -65,7 +65,7 @@ View active Animi using the `list-active` command."
     /// Exit Brainstorm (This will not affect any active Animi).
     Quit,
 
-    // TODO: AddLobe
+    // TBD: AddLobe
 }
 
 
@@ -82,6 +82,7 @@ pub(crate) fn brainstorm_repl() {
         .with_prompt(Box::new(prompt))
         .build();
 
+    // TODO: Errors
     repl.repl(|cli: Cli| {
         match cli.command {
 
@@ -92,39 +93,68 @@ pub(crate) fn brainstorm_repl() {
             },
 
             Command::ListActive => {
-                // TODO:
-                // Query communication port for names and versions 
-                // then collect and report list
+                let animi = read_animi();
+                for animus in animi {
+                    let animus = animus.expect("Access animus file metadata.");
+                    let name = animus.file_name().into_string().unwrap();
+                    if animus_is_active(&name) {
+                        println!("{}", name) 
+                    }
+                }
             },
 
             Command::ListAll => {
-                // TODO:
-                // Read the ~/.brainstorm/animi directory for names
+                let animi = read_animi();
+                for animus in animi {
+                    let animus = animus.expect("Access animus file metadata.");
+                    let name = animus.file_name().into_string().unwrap();
+                    println!("{}", name) 
+                }
             },
 
             Command::ListNetworks => {
-                // TODO:
-                // Read the ~/.brainstorm/saved directory for names
+                let saved = read_saved();
+                for network in saved {
+                    let network = network.expect("Access network file metadata.");
+                    let name = network.file_name().into_string().unwrap();
+                    println!("{}", name) 
+                }
             },
 
-            Command::Animate {..} => {
-                // TODO:
-                // Search for network filename
-                // Build animus
+            Command::Animate { network } => {
+                let network_filename = network.display().to_string();
+                if network_exists(&network_filename) {
+                    let config = configure_animus(&network_filename);
+                    launch_animus(config);
+                }
             },
 
-            Command::Load {..} => {
-                // TODO:
-                // Search for animus directory
-                // Load & run
+            Command::Load { animus_name } => {
+                if animus_exists(&animus_name) {
+                    if !animus_is_active(&animus_name) {
+
+                        // TODO: Get saved config from saved file
+                        
+                        let config = ();
+                        launch_animus(config);
+                        println!("Animus '{}' loaded!", &animus_name)
+                    } else { 
+                        println!("Animus '{}' is already active!", &animus_name)
+                    }
+                } else {
+                    println!("Animus '{}' not found! Use `list-all`", &animus_name)
+                }
             },
 
             Command::Select { animus_name } => {
-                // Check for animus in active list
-                super::animus_manager_repl(&animus_name)
+                if animus_exists(&animus_name) {
+                    super::animus_manager_repl(&animus_name)
+                } else {
+                    println!("Animus '{}' not found! Use `list-all`", &animus_name)
+                }
             },
 
-            // TODO: Remote lobe startup, connection
+            // TBD: Remote animus startup, connection via SSH
 
         }
     });
@@ -132,3 +162,80 @@ pub(crate) fn brainstorm_repl() {
 }
 
 
+fn read_animi() -> std::fs::ReadDir {
+    std::fs::read_dir("~/.brainstorm/animi")
+        .expect("Framework directory must be set up. Restart brainstorm.")
+}
+
+fn read_saved() -> std::fs::ReadDir {
+    std::fs::read_dir("~/.brainstorm/saved")
+        .expect("Framework directory must be set up. Restart brainstorm.")
+}
+
+fn animus_exists(animus_name: &str) -> bool {
+    let mut exists = false;
+    for animus in read_animi() {
+        let animus = animus.expect("Access animus metadata.");
+        let name = animus.file_name().into_string().unwrap();
+        if &name == animus_name {
+            exists = true;
+        }
+    }
+    exists
+}
+
+fn network_exists(network_name: &str) -> bool {
+    let mut exists = false;
+    for saved in read_saved() {
+        let saved = saved.expect("Access animus metadata.");
+        let name = saved.file_name().into_string().unwrap();
+        if &name == network_name {
+            exists = true;
+        }
+    }
+    exists
+}
+
+fn animus_is_active(animus_name: &str) -> bool {
+    // TODO: 
+    // For all lobes and locally
+    // Ping animus name to 4048 to see if any respond
+    todo!()
+}
+
+fn configure_animus(network_filename: &str) {
+    // TODO: parse animus name from complex name .nn
+    let mut animus_name = network_filename.to_string();
+    
+    animus_name = rename_animus(animus_name);
+
+    // TODO: 
+    // Create directory for animus_name
+    // Run a loop to build AnimusConfig builder struct from animusd,
+    // Config other options (eg logging, neuron model, etc.)
+    // Save the config to/as a file in the animus directory
+    // then return the builder
+}
+
+fn rename_animus(mut animus_name: String) -> String {
+
+    // Check for an active animus with that name.
+    // Naming the animus with an empty string will cancel.
+    while animus_is_active(&animus_name) && &animus_name != "" {
+        println!("Animus '{}' is already active!", &animus_name);
+        println!("Type a new name or sumbit an empty line to cancel.");
+        print!("New name: ");
+        // TODO: wait for new name,
+        // TODO: Check for valid string characters (alphanumeric & underscore)
+
+    }
+
+
+    todo!{}
+}
+
+fn launch_animus(config: ()) {
+    // TODO: Take AnimusConfig 
+    // Compile Cajal features based on config options
+    // TODO: Launch animus runtime loop with AnimusConfig
+}
