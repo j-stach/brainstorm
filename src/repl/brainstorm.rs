@@ -1,8 +1,13 @@
 
+// TODO: Error handling
+
 use clap::{ Parser, Subcommand };
 use clap_repl::ClapEditor;
 use clap_repl::reedline::{ DefaultPrompt, DefaultPromptSegment };
 
+use std::path::{ Path, PathBuf };
+
+use crate::helpers::*;
 
 #[derive(Parser)]
 #[command(
@@ -24,7 +29,7 @@ enum Command {
         #[arg(
             help = 
 "Provide the path to the `.nn` file that holds the network to be animated.
-Brainstorm will search for the file in ~/.brainstorm/saved/ before trying elsewhere.
+Brainstorm will search for the file in ~/.brainstorm/saved.
 Use `list-networks` to view saved network filenames." 
         )]
         network: std::path::PathBuf
@@ -35,8 +40,8 @@ Use `list-networks` to view saved network filenames."
         #[arg(
             help = 
 "Provide the name of the Animus as it appears in the filesystem. 
-The Animus must have data saved on the device.
-View available Animi using the `list-all` command."
+The Animus must have a directory set up on this device.
+View all available Animi using the `list-all` command."
         )]
         animus_name: String
     },
@@ -87,7 +92,7 @@ pub(crate) fn brainstorm_repl() {
         match cli.command {
 
             Command::Quit => {
-                // TODO: "There are X animi still running in the background."
+                // TODO: "There are X animi still running across Y devices."
                 println!("Goodbye!");
                 std::process::exit(0);
             },
@@ -95,7 +100,8 @@ pub(crate) fn brainstorm_repl() {
             Command::ListActive => {
                 let animi = read_animi();
                 for animus in animi {
-                    let animus = animus.expect("Access animus file metadata.");
+                    let animus = animus
+                        .expect("Access animus file metadata.");
                     let name = animus.file_name().into_string().unwrap();
                     if animus_is_active(&name) {
                         println!("{}", name) 
@@ -106,7 +112,8 @@ pub(crate) fn brainstorm_repl() {
             Command::ListAll => {
                 let animi = read_animi();
                 for animus in animi {
-                    let animus = animus.expect("Access animus file metadata.");
+                    let animus = animus
+                        .expect("Access animus file metadata.");
                     let name = animus.file_name().into_string().unwrap();
                     println!("{}", name) 
                 }
@@ -115,7 +122,8 @@ pub(crate) fn brainstorm_repl() {
             Command::ListNetworks => {
                 let saved = read_saved();
                 for network in saved {
-                    let network = network.expect("Access network file metadata.");
+                    let network = network
+                        .expect("Access network file metadata.");
                     let name = network.file_name().into_string().unwrap();
                     println!("{}", name) 
                 }
@@ -124,19 +132,15 @@ pub(crate) fn brainstorm_repl() {
             Command::Animate { network } => {
                 let network_filename = network.display().to_string();
                 if network_exists(&network_filename) {
-                    let config = configure_animus(&network_filename);
-                    launch_animus(config);
+                    let animus_name = animus_setup(&network_filename);
+                    launch_animus(&animus_name);
                 }
             },
 
             Command::Load { animus_name } => {
                 if animus_exists(&animus_name) {
                     if !animus_is_active(&animus_name) {
-
-                        // TODO: Get saved config from saved file
-                        
-                        let config = ();
-                        launch_animus(config);
+                        launch_animus(&animus_name);
                         println!("Animus '{}' loaded!", &animus_name)
                     } else { 
                         println!("Animus '{}' is already active!", &animus_name)
@@ -162,80 +166,177 @@ pub(crate) fn brainstorm_repl() {
 }
 
 
-fn read_animi() -> std::fs::ReadDir {
-    std::fs::read_dir("~/.brainstorm/animi")
-        .expect("Framework directory must be set up. Restart brainstorm.")
+/* Helper functions */
+
+//
+fn animus_setup(network_filename: &str) -> String {
+
+    /*
+    if !network_filename.ends_with(".nn") {
+        return Err(anyhow::anyhow!(
+            "Invalid file type: Expected `.nn` file extension."
+        ))
+    }
+    */
+
+    let mut animus_name = network_filename.strip_suffix(".nn")
+        .expect("Remove filename `.nn` suffix")
+        .to_string();
+
+    // Rename the animus if necessary
+    animus_name = rename_animus(animus_name)
+        // TODO: Handle Option<String>
+        .unwrap(); // TODO: Abort on None
+
+
+    // Create animus directory
+    let animus_dir = animus_dir(&animus_name);
+    let animus_path = Path::new(&animus_dir);
+    if !animus_path.is_dir() {
+        std::fs::create_dir(animus_path)
+            .expect("Create animus directory");
+    }
+
+    // TODO: Handle Option<String>
+    configure_animus(&animus_name);
+    build_animus(&animus_name);
+
+    animus_name
 }
 
-fn read_saved() -> std::fs::ReadDir {
-    std::fs::read_dir("~/.brainstorm/saved")
-        .expect("Framework directory must be set up. Restart brainstorm.")
-}
+// TODO: Sanitize inputs against injection
+fn rename_animus(mut animus_name: String) -> Option<String> {
 
-fn animus_exists(animus_name: &str) -> bool {
-    let mut exists = false;
-    for animus in read_animi() {
-        let animus = animus.expect("Access animus metadata.");
-        let name = animus.file_name().into_string().unwrap();
-        if &name == animus_name {
-            exists = true;
+    let check_valid = |name: &str| {
+        let valid_name = regex::Regex::new(r"^[a-zA-Z0-9_]+$").unwrap();
+        valid_name.is_match(name)
+    };
+
+    let mut valid_name = check_valid(&animus_name);
+
+    while !valid_name && &animus_name != "" {
+        if check_valid(&animus_name) {
+            if animus_is_active(&animus_name) {
+                println!("Animus '{}' is already active!", &animus_name);
+            } else {
+                valid_name = true;
+            }
+        } else {
+            println!("Invalid character(s) in string. Use a-Z, 0-9, or underscores.")
+        }
+
+        if !valid_name {
+            println!("Type a new name or sumbit an empty line to cancel.");
+            print!("New name: ");
+
+            let mut input = String::new();
+            std::io::stdin()
+                .read_line(&mut input)
+                .expect("Read user input");
+            animus_name = input.trim().to_string();
         }
     }
-    exists
-}
 
-fn network_exists(network_name: &str) -> bool {
-    let mut exists = false;
-    for saved in read_saved() {
-        let saved = saved.expect("Access animus metadata.");
-        let name = saved.file_name().into_string().unwrap();
-        if &name == network_name {
-            exists = true;
-        }
+    if valid_name {
+        println!("Name: {}", animus_name);
+        Some(animus_name)
+    } else {
+        println!("No name chosen.");
+        None
     }
-    exists
 }
 
-fn animus_is_active(animus_name: &str) -> bool {
-    // TODO: 
-    // For all lobes and locally
-    // Ping animus name to 4048 to see if any respond
-    todo!()
+//
+fn animus_dir(animus_name: &str) -> String {
+    format!("~/.brainstorm/animi/{}", animus_name)
 }
 
-fn configure_animus(network_filename: &str) {
-    // TODO: parse animus name from complex name .nn
-    let mut animus_name = network_filename.to_string();
+//
+fn configure_animus(animus_name: &str) {
+
+    let animus_root = format!("~/.brainstorm/animi/{}", animus_name);
+    let animus_path = Path::new(&animus_root);
+
+    let config_path = animus_path.join("config.toml");
+
+    // TODO: Copy the config.toml template from animusd
+    // Or, find the existing one and use that
+    let config_toml: toml::Value = String::from("[test]")
+        .parse()
+        .unwrap();
+
+    // TODO:
+    // Run a loop to build AnimusConfig 
+    // Loop to configure logging
+    // Config features
+
+    let config_string = toml::to_string_pretty(&config_toml)
+        .expect("Convert TOML to string");
+
+    // NOTE: Overwrites existing config.toml
+    std::fs::write(config_path, config_string)
+        .expect("Write config.toml to animus directory");
+}
+
+// TODO: Errors
+// Download a unique `animusd` executable for an animus, based on lib features.
+fn build_animus(animus_name: &str) {
+
+    // Build the animusd executable with the features specified.
+    let animus_dir = animus_dir(&animus_name);
+    let features = read_animus_features(animus_name);
+
+    let mut cmd = std::process::Command::new("cargo");
+    cmd.arg("install").arg("animusd");
+    if !features.is_empty() {
+        cmd.arg("--features").arg(&features);
+    }
+    cmd.arg("--root").arg(&animus_dir);
+
+    let result = cmd.output()
+        .expect("Command executes for valid features");
+    if !result.status.success() {
+        // Error
+    }
+
+    // Rename the service executable to distinguish it as a process.
+    let default_path = format!("{}/bin/animusd", &animus_dir);
+    let bin_path = format!("{}-{}", &default_path, &animus_name);
+
+    let mut cmd = std::process::Command::new("mv");
+    cmd.arg(&default_path).arg(&bin_path);
+
+    let result = cmd.output()
+        .expect("Rename animusd executable");
+    if !result.status.success() {
+        // Error
+    }
+
+    // Make animusd executable.
+    let mut cmd = std::process::Command::new("chmod");
+    cmd.arg("+x").arg(&bin_path);
+
+    let result = cmd.output()
+        .expect("Command executes for valid features");
+    if !result.status.success() {
+        // Error
+    }
+}
+
+// 
+fn launch_animus(animus_name: &str) {
+    let animus_dir = animus_dir(&animus_name);
+    let bin_path = format!("{}/bin/animusd-{}", &animus_dir, &animus_name);
     
-    animus_name = rename_animus(animus_name);
+    // The binary should have been made executable when it was set up above.
+    let mut cmd = std::process::Command::new(bin_path);
 
-    // TODO: 
-    // Create directory for animus_name
-    // Run a loop to build AnimusConfig builder struct from animusd,
-    // Config other options (eg logging, neuron model, etc.)
-    // Save the config to/as a file in the animus directory
-    // then return the builder
-}
-
-fn rename_animus(mut animus_name: String) -> String {
-
-    // Check for an active animus with that name.
-    // Naming the animus with an empty string will cancel.
-    while animus_is_active(&animus_name) && &animus_name != "" {
-        println!("Animus '{}' is already active!", &animus_name);
-        println!("Type a new name or sumbit an empty line to cancel.");
-        print!("New name: ");
-        // TODO: wait for new name,
-        // TODO: Check for valid string characters (alphanumeric & underscore)
-
+    let result = cmd.output()
+        .expect("Command executes for valid features");
+    if !result.status.success() {
+        // Error
     }
-
-
-    todo!{}
 }
 
-fn launch_animus(config: ()) {
-    // TODO: Take AnimusConfig 
-    // Compile Cajal features based on config options
-    // TODO: Launch animus runtime loop with AnimusConfig
-}
+
+

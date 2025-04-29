@@ -14,4 +14,6 @@ clap-repl = "0.3.2"
 anyhow = "1.0.98"
 
 animusd = { path = "/home/jordan/projs/animusd" }
+regex = "1.11.1"
+toml = "0.8.21"
 

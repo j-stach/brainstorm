@@ -7,6 +7,8 @@ use clap::{ Parser, Subcommand };
 use clap_repl::{ ClapEditor, ReadCommandOutput };
 use clap_repl::reedline::{ DefaultPrompt, DefaultPromptSegment };
 
+use crate::helpers::send_animus_command;
+
 
 #[derive(Parser)]
 #[command(
@@ -65,39 +67,46 @@ pub(crate) fn animus_manager_repl(animus_name: &str) {
         match inner_repl.read_command() {
             ReadCommandOutput::Command(cli) => match cli.command {
 
+                // Get name from complex
                 AnimusCommand::Name => {
-                    // TODO: Get name from complex
+                    send_animus_command(animus_name, "name");
                     println!("Animus name is: ");
                 },
 
+                // Get version from complex
                 AnimusCommand::Version => {
-                    // TODO: Get version from complex
+                    send_animus_command(animus_name, "version");
                     println!("Animus version is: ");
                 },
 
+                // Get list of structures from complex
                 AnimusCommand::ListStructures => {
-                    // TODO: Get list of structures from complex
+                    send_animus_command(animus_name, "list_structures");
                     println!("This animus contains the following structures: ");
                 },
 
                 AnimusCommand::Save => {
-                    // Clone & save? 
-                    // Save without stopping?
                     println!("Saving network state...");
+                    send_animus_command(animus_name, "save");
                     println!("Done");
                 },
 
+                // Start processing inputs for the animus
                 AnimusCommand::Vive => {
-                    // TODO: Start processing inputs for the animus
+                    send_animus_command(animus_name, "vive");
                     println!("It's Alive!");
                 },
 
+                // Stop processing inputs, save
                 AnimusCommand::RespiceFinem => {
-                    // TODO: Stop processing inputs, save, then deactivate
-
+                    send_animus_command(animus_name, "respice_finem");
                     println!("Memento mori");
                     run_manager = false
                 },
+
+                // TODO: 
+                // Terminate the animus service
+                // Get status (ready/running/off)
                 
                 AnimusCommand::Return => {
                     run_manager = false
@@ -107,18 +116,12 @@ pub(crate) fn animus_manager_repl(animus_name: &str) {
             ReadCommandOutput::EmptyLine => { /* Do nothing */ },
             ReadCommandOutput::ClapError(e) => { println!{"{}", e}},
             ReadCommandOutput::ReedlineError(e) => { println!{"{}", e}},
-            ReadCommandOutput::ShlexError => { println!{"Error in input syntax"}},
+            ReadCommandOutput::ShlexError => { println!{"Bad input syntax"}},
 
             _ => {}
 
         }
     }
 
-}
-
-// Helper function to send AnimusCommand via TCP and receive AnimusResponse in exchange.
-fn send_animus_command() {
-    // Send command to associated IP addr @ port 4048
-    // Get animus response and parse results
 }
 

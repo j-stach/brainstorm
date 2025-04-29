@@ -1,6 +1,7 @@
 
 mod setup;
 mod repl;
+mod helpers;
 
 fn main() {
 
