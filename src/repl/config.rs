@@ -49,11 +49,6 @@ pub(crate) fn animus_config_repl(animus_name: &str) {
         .parse()
         .unwrap();
 
-    // TODO:
-    // Run a loop to build AnimusConfig 
-    // Loop to configure logging
-    // Config features
-
     let prompt = format!("{}/config", animus_name);
     let prompt = DefaultPrompt {
         left_prompt: DefaultPromptSegment::Basic(prompt),
