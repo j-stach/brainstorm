@@ -5,7 +5,7 @@ use clap::{ Parser, Subcommand };
 use clap_repl::ClapEditor;
 use clap_repl::reedline::{ DefaultPrompt, DefaultPromptSegment };
 
-use std::path::{ Path, PathBuf };
+use std::path::Path;
 
 use crate::helpers::*;
 
@@ -197,8 +197,10 @@ fn animus_setup(network_filename: &str) -> String {
             .expect("Create animus directory");
     }
 
+    // Run the REPL to generate config.
+    // WARN: Expects the animus_name is valid.
     // TODO: Handle Option<String>
-    configure_animus(&animus_name);
+    super::animus_config_repl(&animus_name);
     build_animus(&animus_name);
 
     animus_name
@@ -244,38 +246,6 @@ fn rename_animus(mut animus_name: String) -> Option<String> {
         println!("No name chosen.");
         None
     }
-}
-
-//
-fn animus_dir(animus_name: &str) -> String {
-    format!("~/.brainstorm/animi/{}", animus_name)
-}
-
-//
-fn configure_animus(animus_name: &str) {
-
-    let animus_root = format!("~/.brainstorm/animi/{}", animus_name);
-    let animus_path = Path::new(&animus_root);
-
-    let config_path = animus_path.join("config.toml");
-
-    // TODO: Copy the config.toml template from animusd
-    // Or, find the existing one and use that
-    let config_toml: toml::Value = String::from("[test]")
-        .parse()
-        .unwrap();
-
-    // TODO:
-    // Run a loop to build AnimusConfig 
-    // Loop to configure logging
-    // Config features
-
-    let config_string = toml::to_string_pretty(&config_toml)
-        .expect("Convert TOML to string");
-
-    // NOTE: Overwrites existing config.toml
-    std::fs::write(config_path, config_string)
-        .expect("Write config.toml to animus directory");
 }
 
 // TODO: Errors

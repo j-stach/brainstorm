@@ -1,33 +1,56 @@
 
-use std::path::{ Path, PathBuf };
+// TODO: Errors
+
+use std::path::Path;
 use std::process::Command;
+use std::io::{Read, Write};
+use std::net::{TcpStream, SocketAddr};
+use std::time::Duration;
+
 
 // NOTE: Beware injection
 pub(crate) fn animus_is_active(animus_name: &str) -> bool {
 
-    match send_animus_command(animus_name, "version") {
+    match send_animus_command(animus_name, "version").unwrap() {
         Some(_) => true,
         None => false,
     }
 }
 
-//
+// Send command to associated IP address @ port 4048.
+// Get any animus response and parse results to string.
+// Returns an error if the network connection could not be established.
 pub(crate) fn send_animus_command(
     animus_name: &str, 
     command: &str
-) -> Option<()> {
+) -> anyhow::Result<Option<String>> {
 
+    // Create socket to connect to the animus's host device
     let ip_addr = read_animus_config(animus_name, "ip");
+    let socket_addr = format!("{}:4048", ip_addr).parse::<SocketAddr>()?;
+    
+    let mut stream = TcpStream::connect_timeout(
+        &socket_addr, 
+        Duration::from_secs(5)
+    )?;
 
-    // Send command to associated IP addr @ port 4048
-    // Get animus response and parse results
+    stream.set_read_timeout(Some(Duration::from_secs(5)))?;
 
-    // TODO: 
-    // If there is a response before the timeout,
-    // say yes,
-    // otherwise ping ip address to check connection
-
-    todo!("Return response or None")
+    // Send animus command
+    let message = format!("{}:{}", animus_name, command);
+    stream.write_all(message.as_bytes())?;
+    stream.flush()?;
+    
+    // Read response
+    let mut buffer = [0; 1024];
+    let bytes_read = stream.read(&mut buffer)?;
+    let response = String::from_utf8_lossy(&buffer[..bytes_read]).to_string();
+    
+    if response.is_empty() {
+        Ok(None)
+    } else {
+        Ok(Some(response))
+    }
 }
 
 //
@@ -130,4 +153,8 @@ pub(crate) fn read_saved() -> std::fs::ReadDir {
         .expect("Framework directory must be set up. Restart brainstorm.")
 }
 
+//
+pub(crate) fn animus_dir(animus_name: &str) -> String {
+    format!("~/.brainstorm/animi/{}", animus_name)
+}
 

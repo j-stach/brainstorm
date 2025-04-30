@@ -1,4 +1,6 @@
 
+// TODO: Errors
+
 // This aligns with the capabilities of the `cajal-animus` 
 // and executes the stored commands via the dedicated 4048 port.
 
@@ -69,42 +71,44 @@ pub(crate) fn animus_manager_repl(animus_name: &str) {
 
                 // Get name from complex
                 AnimusCommand::Name => {
-                    send_animus_command(animus_name, "name");
+                    let _ = send_animus_command(animus_name, "name");
                     println!("Animus name is: ");
                 },
 
                 // Get version from complex
                 AnimusCommand::Version => {
-                    send_animus_command(animus_name, "version");
+                    let _ = send_animus_command(animus_name, "version");
                     println!("Animus version is: ");
                 },
 
                 // Get list of structures from complex
                 AnimusCommand::ListStructures => {
-                    send_animus_command(animus_name, "list_structures");
+                    let _ = send_animus_command(animus_name, "list_structures");
                     println!("This animus contains the following structures: ");
                 },
 
+                // TBD
                 AnimusCommand::Save => {
                     println!("Saving network state...");
-                    send_animus_command(animus_name, "save");
+                    let _ = send_animus_command(animus_name, "save");
                     println!("Done");
                 },
 
                 // Start processing inputs for the animus
                 AnimusCommand::Vive => {
-                    send_animus_command(animus_name, "vive");
+                    let _ = send_animus_command(animus_name, "vive");
                     println!("It's Alive!");
                 },
 
                 // Stop processing inputs, save
                 AnimusCommand::RespiceFinem => {
-                    send_animus_command(animus_name, "respice_finem");
+                    let _ = send_animus_command(animus_name, "respice_finem");
                     println!("Memento mori");
                     run_manager = false
                 },
 
                 // TODO: 
+                // Fini
                 // Terminate the animus service
                 // Get status (ready/running/off)
                 
