@@ -1,6 +1,4 @@
 
-// TODO: Error handling
-
 use clap::{ Parser, Subcommand };
 use clap_repl::ClapEditor;
 use clap_repl::reedline::{ DefaultPrompt, DefaultPromptSegment };
@@ -8,6 +6,7 @@ use clap_repl::reedline::{ DefaultPrompt, DefaultPromptSegment };
 use std::path::Path;
 
 use crate::helpers::*;
+
 
 #[derive(Parser)]
 #[command(
@@ -88,7 +87,7 @@ pub(crate) fn brainstorm_repl() {
         .with_prompt(Box::new(prompt))
         .build();
 
-    // TODO: Errors
+    // Handle commands:
     repl.repl(|cli: Cli| {
         match cli.command {
 
@@ -99,56 +98,24 @@ pub(crate) fn brainstorm_repl() {
             },
 
             Command::ListActive => {
-                let animi = read_animi();
-                for animus in animi {
-                    let animus = animus
-                        .expect("Access animus file metadata.");
-                    let name = animus.file_name().into_string().unwrap();
-                    if animus_is_active(&name).unwrap() {
-                        println!("{}", name) 
-                    }
-                }
+                list_active_animi()
             },
 
             Command::ListAll => {
-                let animi = read_animi();
-                for animus in animi {
-                    let animus = animus
-                        .expect("Access animus file metadata.");
-                    let name = animus.file_name().into_string().unwrap();
-                    println!("{}", name) 
-                }
+                list_all_animi()
             },
 
             Command::ListNetworks => {
-                let saved = read_saved();
-                for network in saved {
-                    let network = network
-                        .expect("Access network file metadata.");
-                    let name = network.file_name().into_string().unwrap();
-                    println!("{}", name) 
-                }
+                list_saved_networks()
             },
 
             Command::Animate { network } => {
                 let network_filename = network.display().to_string();
-                if network_exists(&network_filename) {
-                    let animus_name = animus_setup(&network_filename);
-                    launch_animus(&animus_name);
-                }
+                animate_network(&network_filename)
             },
 
             Command::Load { animus_name } => {
-                if animus_exists(&animus_name) {
-                    if !animus_is_active(&animus_name).unwrap() {
-                        launch_animus(&animus_name);
-                        println!("Animus '{}' loaded!", &animus_name)
-                    } else { 
-                        println!("Animus '{}' is already active!", &animus_name)
-                    }
-                } else {
-                    println!("Animus '{}' not found! Use `list-all`", &animus_name)
-                }
+                load_animus(&animus_name)
             },
 
             Command::Select { animus_name } => {
@@ -169,27 +136,136 @@ pub(crate) fn brainstorm_repl() {
 
 /* Helper functions */
 
-//
-fn animus_setup(network_filename: &str) -> String {
+// Print a list of all active animi that can be found in the `animi` directory.
+// Expects that all files within have valid animus filestructures.
+fn list_active_animi() {
+    let animi = read_animi();
+    for animus in animi {
+        let animus = animus
+            .expect("Access animus metadata. If you are seeing this message, your `animi` directory contains an unrecognized filestructure or you lack permission to access it.");
+        let name = animus.file_name().into_string()
+            .expect("Animus name must be a valid string. If you are seeing this message, your `animi` directory contains an unrecognized filestructure or you lack permission to access it.");
+        if animus_is_active(&name).unwrap() {
+            println!("{}", name) 
+        }
+    }
+}
 
-    /*
+// Print a list of all files that appear in the `animi` directory.
+// Expects that all files within have valid animus filestructures.
+fn list_all_animi() {
+    let animi = read_animi();
+    for animus in animi {
+        let animus = animus
+            .expect("Access animus metadata. If you are seeing this message, your `animi` directory contains an unrecognized filestructure or you lack permission to access it.");
+        let name = animus.file_name().into_string()
+            .expect("Animus name must be a valid string. If you are seeing this message, your `animi` directory contains an unrecognized filestructure or you lack permission to access it.");
+        println!("{}", name) 
+    }
+}
+
+// Print a list of all network files that appear in the `saved` directory.
+// TODO: Filter out non-`.nn` files
+fn list_saved_networks() {
+    let saved = read_saved();
+    for network in saved {
+        let network = network
+            .expect("Access network metadata. If you are seeing this message, your `saved` directory contains an unrecognized filestructure or you lack permission to access it.");
+        let name = network.file_name().into_string()
+            .expect("Network name must be a valid string. If you are seeing this message, your `saved` directory contains an unrecognized filestructure or you lack permission to access it.");
+        println!("{}", name) 
+    }
+}
+
+// Load an existing but inactive animus.
+fn load_animus(animus_name: &str) {
+
+    if animus_exists(&animus_name) {
+        match animus_is_active(&animus_name) {
+
+            Ok(active) => {
+                if !active {
+                    match launch_animus(&animus_name) {
+
+                        Ok(_) => {
+                            println!("Animus '{}' is loaded!", &animus_name)
+                        },
+
+                        Err(e) => {
+                            println!("An error occurred during launch.");
+                            eprintln!("{}", e);
+                        }
+                    }
+                } else { 
+                    println!("Animus '{}' is already active!", &animus_name)
+                }
+            },
+
+            Err(e) => {
+                println!("Failed to connect to animus host IP address.");
+                eprintln!("{}", e);
+            }
+        }
+    } else {
+        println!("Animus '{}' not found! Use `list-all`", &animus_name)
+    }
+}
+
+// Create a new animus setup for the given network.
+fn animate_network(network_filename: &str) {
+
+    if network_exists(&network_filename) {
+        match animus_setup(&network_filename) {
+
+            Ok(animus_name) => {
+                match launch_animus(&animus_name) {
+
+                    Ok(_) => {
+                        println!("Animus '{}' is loaded!", &animus_name)
+                    },
+
+                    Err(e) => {
+                        println!("An error occurred during launch.");
+                        eprintln!("{}", e);
+                    }
+                }
+            },
+
+            Err(e) => {
+                println!("An error occurred during setup.");
+                eprintln!("{}", e);
+            }
+        }
+    } else {
+        println!("Network '{}' not found! Use `list-networks`", network_filename)
+    }
+}
+
+// Set up a new animus directory, animusd executable, and all necessary files.
+fn animus_setup(network_filename: &str) -> anyhow::Result<String> {
+
     if !network_filename.ends_with(".nn") {
+        // TODO: invalid file name error type
         return Err(anyhow::anyhow!(
             "Invalid file type: Expected `.nn` file extension."
         ))
     }
-    */
 
-    let mut animus_name = network_filename.strip_suffix(".nn")
-        .expect("Remove filename `.nn` suffix")
+    let animus_name = network_filename.strip_suffix(".nn")
+        // Safe because we check for it above
+        .expect("Filename has a `.nn` suffix")
         .to_string();
 
-    // Rename the animus if necessary
-    animus_name = rename_animus(animus_name)
-        // TODO: Handle Option<String>
-        .unwrap()  // TODO: Abort on None
-        .unwrap(); // TODO: Abort on None
+    // Rename the animus if necessary (e.g. name already exists or is invalid)
+    let animus_name = rename_animus(animus_name)?;
 
+    if animus_name.is_none() {
+        // TODO: Separate warning from error handling?
+        return Err(anyhow::anyhow!("WARN: Animus setup aborted"))
+    }
+
+    // Safe because we check for it above.
+    let animus_name = animus_name.expect("Animus name exists");
 
     // Create animus directory
     let animus_dir = animus_dir(&animus_name);
@@ -200,18 +276,19 @@ fn animus_setup(network_filename: &str) -> String {
     }
 
     // Run the REPL to generate config.
-    // WARN: Expects the animus_name is valid.
-    // TODO: Handle Option<String>
+    // WARN: REPL expects the animus_name is valid.
     super::animus_config_repl(&animus_name);
-    build_animus(&animus_name);
+    build_animus(&animus_name)?;
 
-    animus_name
+    Ok(animus_name)
 }
 
-// TODO: Sanitize inputs against injection
+// Check if the proposed animus name is valid, then rename it if necessary.
 fn rename_animus(mut animus_name: String) -> anyhow::Result<Option<String>> {
 
     let mut valid_name = valid_animus_name(&animus_name);
+
+    // TODO: Allow rename even if the network name would be valid.
 
     while !valid_name && &animus_name != "" {
         if valid_animus_name(&animus_name) {
@@ -290,7 +367,7 @@ fn build_animus(animus_name: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-// 
+// Execute the animusd service for an animus.
 fn launch_animus(animus_name: &str) -> anyhow::Result<()> {
 
     let animus_dir = animus_dir(&animus_name);

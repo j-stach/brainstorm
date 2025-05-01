@@ -5,8 +5,6 @@ use clap_repl::reedline::{ DefaultPrompt, DefaultPromptSegment };
 
 use std::path::Path;
 
-use crate::helpers::send_animus_command;
-
 
 #[derive(Parser)]
 #[command(
