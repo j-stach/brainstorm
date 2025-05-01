@@ -211,16 +211,10 @@ fn animus_setup(network_filename: &str) -> String {
 // TODO: Sanitize inputs against injection
 fn rename_animus(mut animus_name: String) -> anyhow::Result<Option<String>> {
 
-    let check_valid = |name: &str| {
-        // Should unwrap a valid regular expression.
-        let valid_name = regex::Regex::new(r"^[a-zA-Z0-9_]+$").unwrap();
-        valid_name.is_match(name)
-    };
-
-    let mut valid_name = check_valid(&animus_name);
+    let mut valid_name = valid_animus_name(&animus_name);
 
     while !valid_name && &animus_name != "" {
-        if check_valid(&animus_name) {
+        if valid_animus_name(&animus_name) {
             if animus_is_active(&animus_name)? {
                 println!("Animus '{}' is already active!", &animus_name);
             } else {
