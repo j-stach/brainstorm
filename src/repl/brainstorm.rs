@@ -76,6 +76,7 @@ View active Animi using the `list-active` command."
 
 // Launch the top-level REPL and process commands.
 pub(crate) fn brainstorm_repl() {
+
     println!("Welcome to Brainstorm! For usage information, enter 'help'.");
 
     let prompt = DefaultPrompt {
@@ -103,7 +104,7 @@ pub(crate) fn brainstorm_repl() {
                     let animus = animus
                         .expect("Access animus file metadata.");
                     let name = animus.file_name().into_string().unwrap();
-                    if animus_is_active(&name) {
+                    if animus_is_active(&name).unwrap() {
                         println!("{}", name) 
                     }
                 }
@@ -139,7 +140,7 @@ pub(crate) fn brainstorm_repl() {
 
             Command::Load { animus_name } => {
                 if animus_exists(&animus_name) {
-                    if !animus_is_active(&animus_name) {
+                    if !animus_is_active(&animus_name).unwrap() {
                         launch_animus(&animus_name);
                         println!("Animus '{}' loaded!", &animus_name)
                     } else { 
@@ -186,6 +187,7 @@ fn animus_setup(network_filename: &str) -> String {
     // Rename the animus if necessary
     animus_name = rename_animus(animus_name)
         // TODO: Handle Option<String>
+        .unwrap()  // TODO: Abort on None
         .unwrap(); // TODO: Abort on None
 
 
@@ -207,9 +209,10 @@ fn animus_setup(network_filename: &str) -> String {
 }
 
 // TODO: Sanitize inputs against injection
-fn rename_animus(mut animus_name: String) -> Option<String> {
+fn rename_animus(mut animus_name: String) -> anyhow::Result<Option<String>> {
 
     let check_valid = |name: &str| {
+        // Should unwrap a valid regular expression.
         let valid_name = regex::Regex::new(r"^[a-zA-Z0-9_]+$").unwrap();
         valid_name.is_match(name)
     };
@@ -218,7 +221,7 @@ fn rename_animus(mut animus_name: String) -> Option<String> {
 
     while !valid_name && &animus_name != "" {
         if check_valid(&animus_name) {
-            if animus_is_active(&animus_name) {
+            if animus_is_active(&animus_name)? {
                 println!("Animus '{}' is already active!", &animus_name);
             } else {
                 valid_name = true;
@@ -233,28 +236,26 @@ fn rename_animus(mut animus_name: String) -> Option<String> {
 
             let mut input = String::new();
             std::io::stdin()
-                .read_line(&mut input)
-                .expect("Read user input");
+                .read_line(&mut input)?;
             animus_name = input.trim().to_string();
         }
     }
 
     if valid_name {
         println!("Name: {}", animus_name);
-        Some(animus_name)
+        Ok(Some(animus_name))
     } else {
         println!("No name chosen.");
-        None
+        Ok(None)
     }
 }
 
-// TODO: Errors
 // Download a unique `animusd` executable for an animus, based on lib features.
-fn build_animus(animus_name: &str) {
+fn build_animus(animus_name: &str) -> anyhow::Result<()> {
 
     // Build the animusd executable with the features specified.
     let animus_dir = animus_dir(&animus_name);
-    let features = read_animus_features(animus_name);
+    let features = read_animus_features(animus_name)?;
 
     let mut cmd = std::process::Command::new("cargo");
     cmd.arg("install").arg("animusd");
@@ -263,10 +264,10 @@ fn build_animus(animus_name: &str) {
     }
     cmd.arg("--root").arg(&animus_dir);
 
-    let result = cmd.output()
-        .expect("Command executes for valid features");
+    let result = cmd.output()?;
     if !result.status.success() {
-        // Error
+        // TODO: Configuration syntax error type
+        return Err(anyhow::anyhow!("Invalid features in string: {}", features))
     }
 
     // Rename the service executable to distinguish it as a process.
@@ -276,36 +277,41 @@ fn build_animus(animus_name: &str) {
     let mut cmd = std::process::Command::new("mv");
     cmd.arg(&default_path).arg(&bin_path);
 
-    let result = cmd.output()
-        .expect("Rename animusd executable");
+    let result = cmd.output()?;
     if !result.status.success() {
-        // Error
+        // TODO: Setup error type
+        return Err(anyhow::anyhow!("An error occured when renaming animusd."))
     }
 
     // Make animusd executable.
     let mut cmd = std::process::Command::new("chmod");
     cmd.arg("+x").arg(&bin_path);
 
-    let result = cmd.output()
-        .expect("Command executes for valid features");
+    let result = cmd.output()?;
     if !result.status.success() {
-        // Error
+        // TODO: Setup error type
+        return Err(anyhow::anyhow!("A permissions error occurred."))
     }
+
+    Ok(())
 }
 
 // 
-fn launch_animus(animus_name: &str) {
+fn launch_animus(animus_name: &str) -> anyhow::Result<()> {
+
     let animus_dir = animus_dir(&animus_name);
     let bin_path = format!("{}/bin/animusd-{}", &animus_dir, &animus_name);
     
     // The binary should have been made executable when it was set up above.
     let mut cmd = std::process::Command::new(bin_path);
 
-    let result = cmd.output()
-        .expect("Command executes for valid features");
+    let result = cmd.output()?;
     if !result.status.success() {
-        // Error
+        // TODO: Setup error type
+        return Err(anyhow::anyhow!("Failed to launch animus executable."))
     }
+
+    Ok(())
 }
 
 

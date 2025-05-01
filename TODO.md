@@ -5,6 +5,7 @@
 - [ ] Store connection & authentication in animus config, allowing you to control remotely without ssh
 
 ## Errors
+- [ ] Dedicated thiserror types for config, setup, command, etc.
 
 ## Directory structure:
 

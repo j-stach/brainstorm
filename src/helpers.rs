@@ -9,11 +9,11 @@ use std::time::Duration;
 
 
 // NOTE: Beware injection
-pub(crate) fn animus_is_active(animus_name: &str) -> bool {
+pub(crate) fn animus_is_active(animus_name: &str) -> anyhow::Result<bool> {
 
-    match send_animus_command(animus_name, "version").unwrap() {
-        Some(_) => true,
-        None => false,
+    match send_animus_command(animus_name, "version")? {
+        Some(_) => Ok(true),
+        None => Ok(false),
     }
 }
 
@@ -26,7 +26,7 @@ pub(crate) fn send_animus_command(
 ) -> anyhow::Result<Option<String>> {
 
     // Create socket to connect to the animus's host device
-    let ip_addr = read_animus_config(animus_name, "ip");
+    let ip_addr = read_animus_config(animus_name, "ip")?;
     let socket_addr = format!("{}:4048", ip_addr).parse::<SocketAddr>()?;
     
     let mut stream = TcpStream::connect_timeout(
@@ -43,54 +43,84 @@ pub(crate) fn send_animus_command(
     
     // Read response
     let mut buffer = [0; 1024];
-    let bytes_read = stream.read(&mut buffer)?;
-    let response = String::from_utf8_lossy(&buffer[..bytes_read]).to_string();
-    
-    if response.is_empty() {
-        Ok(None)
-    } else {
+    let bytes_read = stream.read(&mut buffer);
+
+    if let Some(len) = bytes_read.ok() {
+        let response = String::from_utf8_lossy(&buffer[..len]).to_string();
         Ok(Some(response))
+    } else {
+        // Timeout on read means animus is inactive.
+        // TODO: Try again?
+        Ok(None)
     }
 }
 
 //
-pub(crate) fn read_animus_features(animus_name: &str) -> String {
-
-    let mut features = String::new();
-
-    let animus_config = read_config_file(animus_name);
-    let animus_lib = animus_config.get("lib")
-        .expect("Find [animus] section");
-
-    let lib_features = animus_lib.get("features")
-        .expect("Find animus features");
-
-    let features_string = lib_features.as_array()
-        .expect("Retrieve `features` array")
-        .iter()
-        .map(|v: &toml::Value| format!("{}", v))
-        .collect::<Vec<_>>()
-        .join(" ")
-        .to_string();
-
-    features_string
+pub(crate) fn handle_animus_response(
+    animus_name: &str, 
+    response: anyhow::Result<Option<String>>
+) {
+    if let Err(e) = response {
+        report_command_error("name", e);
+    } else {
+        if let Some(value) = response.unwrap() {
+            println!("{}", value);
+        } else {
+            println!("No response from animus '{}'", animus_name);
+        }
+    }
 }
 
 //
-pub(crate) fn read_animus_config(animus_name: &str, field: &str) -> String {
-
-    let animus_config = read_config_file(animus_name);
-    let animus_values = animus_config.get("animus")
-        .expect("Find [animus] section");
-
-    let value = animus_values.get(field)
-        .expect("Find config field value");
-
-    format!("{}", value)
+pub(crate) fn report_command_error(command: &str, e: anyhow::Error) {
+    println!(
+        "WARN: An error occurred: Command {} may not have been sent properly.",
+        command
+    );
+    eprintln!("{}", e);
 }
 
 //
-pub(crate) fn read_config_file(animus_name: &str) -> toml::Value {
+pub(crate) fn read_animus_features(animus_name: &str) -> anyhow::Result<String> {
+
+    let mut features_string = String::new();
+
+    let animus_config = read_config_file(animus_name)?;
+    if let Some(animus_lib) = animus_config.get("lib") {
+        if let Some(lib_features) = animus_lib.get("features") {
+            // TODO: Configuration syntax error-type
+            let features_array = lib_features.as_array()
+                .ok_or(anyhow::anyhow!("`features` field must be array"))?;
+
+            features_string = features_array.iter()
+                .map(|v: &toml::Value| format!("{}", v))
+                // TODO: Filter invalid features with a warning
+                .collect::<Vec<_>>()
+                .join(" ")
+                .to_string();
+        }
+    }
+
+    Ok(features_string)
+}
+
+//
+pub(crate) fn read_animus_config(
+    animus_name: &str, 
+    field: &str
+) -> anyhow::Result<String> {
+
+    let animus_config = read_config_file(animus_name)?;
+    
+    // TODO: Configuration syntax error-type
+    let animus_values = animus_config.get("animus").unwrap();
+    let value = animus_values.get(field).unwrap();
+
+    Ok(format!("{}", value))
+}
+
+//
+pub(crate) fn read_config_file(animus_name: &str) -> anyhow::Result<toml::Value> {
 
     let path_string = format!(
         "~/.brainstorm/{}/config.toml", 
@@ -98,28 +128,20 @@ pub(crate) fn read_config_file(animus_name: &str) -> toml::Value {
     );
     let config_path = Path::new(&path_string);
 
-    /*
-    // If no animus config exists:
-    if !config_path.exists() { 
-        return Err(anyhow::anyhow!("No configuration file found."))
-    };
-    */
-
     // Convert config file into Toml object:
-    let config_file = std::fs::read_to_string(config_path)
-        .expect("Read config.toml contents");
+    // TODO: Configuration syntax error-type
+    let config_file = std::fs::read_to_string(config_path)?;
+    let animus_config: toml::Value = config_file.parse()?;
 
-    let animus_config: toml::Value = config_file.parse()
-        .expect("Parse config.toml contents");
-
-    animus_config
+    Ok(animus_config)
 }
 
 //
 pub(crate) fn animus_exists(animus_name: &str) -> bool {
     let mut exists = false;
     for animus in read_animi() {
-        let animus = animus.expect("Access animus metadata.");
+        let animus = animus
+            .expect("Access animus metadata. If you are seeing this message, your `animi` directory contains an unrecognized filestructure.");
         let name = animus.file_name().into_string().unwrap();
         if &name == animus_name {
             exists = true;

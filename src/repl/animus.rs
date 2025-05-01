@@ -9,7 +9,7 @@ use clap::{ Parser, Subcommand };
 use clap_repl::{ ClapEditor, ReadCommandOutput };
 use clap_repl::reedline::{ DefaultPrompt, DefaultPromptSegment };
 
-use crate::helpers::send_animus_command;
+use crate::helpers::*;
 
 
 #[derive(Parser)]
@@ -45,7 +45,7 @@ enum AnimusCommand {
     RespiceFinem,
 
     /// Return to the parent Brainstorm REPL.
-    Return,
+    Back,
 }
 
 
@@ -71,40 +71,49 @@ pub(crate) fn animus_manager_repl(animus_name: &str) {
 
                 // Get name from complex
                 AnimusCommand::Name => {
-                    let _ = send_animus_command(animus_name, "name");
-                    println!("Animus name is: ");
+                    let response = send_animus_command(animus_name, "name");
+                    handle_animus_response(animus_name, response);
                 },
 
                 // Get version from complex
                 AnimusCommand::Version => {
-                    let _ = send_animus_command(animus_name, "version");
-                    println!("Animus version is: ");
+                    let response = send_animus_command(animus_name, "version");
+                    handle_animus_response(animus_name, response);
                 },
 
                 // Get list of structures from complex
                 AnimusCommand::ListStructures => {
-                    let _ = send_animus_command(animus_name, "list_structures");
-                    println!("This animus contains the following structures: ");
+                    let response = send_animus_command(animus_name, "list_structures");
+                    if let Err(e) = response {
+                        report_command_error("name", e);
+                    } else {
+                        if let Some(value) = response.unwrap() {
+                            // TODO: Structures will be listed as a CSV string,
+                            // Needs to be split and listed vertically.
+                            println!("{}", value);
+                        } else {
+                            println!("No response from animus {}", animus_name);
+                        }
+                    }
                 },
 
                 // TBD
                 AnimusCommand::Save => {
                     println!("Saving network state...");
-                    let _ = send_animus_command(animus_name, "save");
-                    println!("Done");
+                    let response = send_animus_command(animus_name, "save");
+                    handle_animus_response(animus_name, response);
                 },
 
                 // Start processing inputs for the animus
                 AnimusCommand::Vive => {
-                    let _ = send_animus_command(animus_name, "vive");
-                    println!("It's Alive!");
+                    let response = send_animus_command(animus_name, "vive");
+                    handle_animus_response(animus_name, response);
                 },
 
                 // Stop processing inputs, save
                 AnimusCommand::RespiceFinem => {
-                    let _ = send_animus_command(animus_name, "respice_finem");
-                    println!("Memento mori");
-                    run_manager = false
+                    let response = send_animus_command(animus_name, "respice_finem");
+                    handle_animus_response(animus_name, response);
                 },
 
                 // TODO: 
@@ -112,7 +121,7 @@ pub(crate) fn animus_manager_repl(animus_name: &str) {
                 // Terminate the animus service
                 // Get status (ready/running/off)
                 
-                AnimusCommand::Return => {
+                AnimusCommand::Back => {
                     run_manager = false
                 },
             },
