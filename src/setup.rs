@@ -14,7 +14,6 @@ pub(crate) fn directory_setup() -> anyhow::Result<()> {
     for dir in directories {
         if !dir.is_dir() {
             fs::create_dir(dir)?;
-            // TODO: Protect from accidental modification/corruption
         }
     }
 

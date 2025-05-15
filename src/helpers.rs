@@ -1,21 +1,21 @@
 
 use std::path::Path;
-use std::io::{Read, Write};
-use std::net::{TcpStream, SocketAddr};
-use std::time::Duration;
+use std::net::IpAddr;
+
+use animusd_lib::{
+    protocol::{ AnimusAction, AnimusCommand },
+    error::{ CommandError, ConfigError }
+};
 
 
 // Check if an animus is currently active by pinging for its version number.
-pub(crate) fn animus_is_active(animus_name: &str) -> anyhow::Result<bool> {
+pub(crate) fn animus_is_active(animus_name: &str) -> Result<bool, CommandError> {
 
     if !valid_animus_name(animus_name) {
-        return Err(anyhow::anyhow!(
-            "{} is an invalid animus name. Use only a-Z, 0-9, and underscores.", 
-            animus_name
-        ))
+        return Err(CommandError::BadCommandSyntax(animus_name.to_string()))
     }
 
-    match send_animus_command(animus_name, "version")? {
+    match send_animus_command(animus_name, AnimusAction::Version)? {
         Some(_) => Ok(true),
         None => Ok(false),
     }
@@ -26,46 +26,24 @@ pub(crate) fn animus_is_active(animus_name: &str) -> anyhow::Result<bool> {
 // Returns an error if the network connection could not be established.
 pub(crate) fn send_animus_command(
     animus_name: &str, 
-    command: &str
-) -> anyhow::Result<Option<String>> {
+    action: AnimusAction 
+) -> Result<Option<String>, CommandError> {
 
     // Create socket to connect to the animus's host device
-    let ip_addr = read_animus_config(animus_name, "ip")?;
-    let socket_addr = format!("{}:4048", ip_addr).parse::<SocketAddr>()?;
-    
-    let mut stream = TcpStream::connect_timeout(
-        &socket_addr, 
-        Duration::from_secs(5)
-    )?;
+    let ip_addr = read_animus_config(animus_name, "ip")?
+        .parse::<IpAddr>()?;
 
-    stream.set_read_timeout(Some(Duration::from_secs(5)))?;
-
-    // Send animus command
-    let message = format!("{}:{}", animus_name, command);
-    stream.write_all(message.as_bytes())?;
-    stream.flush()?;
-    
-    // Read response
-    let mut buffer = [0; 1024];
-    let bytes_read = stream.read(&mut buffer);
-
-    if let Some(len) = bytes_read.ok() {
-        let response = String::from_utf8_lossy(&buffer[..len]).to_string();
-        Ok(Some(response))
-    } else {
-        // Timeout on read means animus is inactive.
-        // TBD: Try again?
-        Ok(None)
-    }
+    let command = AnimusCommand::new(animus_name, action);
+    command.send_command(ip_addr)
 }
 
 // Unpack the response received by send_animus_command and print it.
 pub(crate) fn handle_animus_response(
     animus_name: &str, 
-    response: anyhow::Result<Option<String>>
+    response: Result<Option<String>, CommandError>
 ) {
     if let Err(e) = response {
-        report_command_error("name", e);
+        report_command_error(e);
     } else {
         // Unwrap is safe because we checked for errors above.
         if let Some(value) = response.unwrap() {
@@ -77,16 +55,15 @@ pub(crate) fn handle_animus_response(
 }
 
 // Log and display an error that occurred while sending an animus command.
-pub(crate) fn report_command_error(command: &str, e: anyhow::Error) {
-    println!(
-        "WARN: An error occurred: Command {} may not have been sent properly.",
-        command
-    );
+pub(crate) fn report_command_error(e: CommandError) {
+    println!("WARN: An error occurred: Command was not sent properly.");
     eprintln!("{}", e);
 }
 
 // Read the `lib.features` field of `config.toml` into a string.
-pub(crate) fn read_animus_features(animus_name: &str) -> anyhow::Result<String> {
+pub(crate) fn read_animus_features(
+    animus_name: &str
+) -> Result<String, ConfigError> {
 
     let mut features_string = String::new();
 
@@ -94,8 +71,7 @@ pub(crate) fn read_animus_features(animus_name: &str) -> anyhow::Result<String> 
     if let Some(animus_lib) = animus_config.get("lib") {
         if let Some(lib_features) = animus_lib.get("features") {
             let features_array = lib_features.as_array()
-                // TODO: Configuration syntax error-type
-                .ok_or(anyhow::anyhow!("`features` field must be array"))?;
+                .ok_or(ConfigError::WrongType("features".to_string()))?;
 
             features_string = features_array.iter()
                 .map(|v: &toml::Value| format!("{}", v))
@@ -113,22 +89,22 @@ pub(crate) fn read_animus_features(animus_name: &str) -> anyhow::Result<String> 
 pub(crate) fn read_animus_config(
     animus_name: &str, 
     field: &str
-) -> anyhow::Result<String> {
+) -> Result<String, ConfigError> {
 
     let animus_config = read_config_file(animus_name)?;
     
     let animus_values = animus_config.get("animus")
-        // TODO: Configuration syntax error-type
-        .ok_or(anyhow::anyhow!("`config.toml` must include an [animus] entry."))?;
+        .ok_or(ConfigError::MissingSection("animus".to_string()))?;
     let value = animus_values.get(field)
-        // TODO: Configuration syntax error-type
-        .ok_or(anyhow::anyhow!("`config.toml` is missing field '{}'.", field))?;
+        .ok_or(ConfigError::MissingField(field.to_string()))?;
 
     Ok(format!("{}", value))
 }
 
-// Find the `config.toml` file for an animus and read it into a toml datastructure.
-pub(crate) fn read_config_file(animus_name: &str) -> anyhow::Result<toml::Value> {
+// Find the `config.toml` file for an animus and read it into data.
+pub(crate) fn read_config_file(
+    animus_name: &str
+) -> Result<toml::Value, ConfigError> {
 
     let path_string = format!(
         "~/.brainstorm/{}/config.toml", 
@@ -137,7 +113,6 @@ pub(crate) fn read_config_file(animus_name: &str) -> anyhow::Result<toml::Value>
     let config_path = Path::new(&path_string);
 
     // Convert config file into Toml object:
-    // TODO: Configuration syntax error-type
     let config_file = std::fs::read_to_string(config_path)?;
     let animus_config: toml::Value = config_file.parse()?;
 

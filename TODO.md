@@ -1,4 +1,8 @@
 
+Config loop
+
+## More capabilities
+- [ ] Phantom limb fuzzing
 
 ## Distributed services
 - [ ] Connecting to Animi on other computers, with authentication (lobes) using SSH (prompt for password)
@@ -17,6 +21,8 @@
 │   └── network_01/
 │       ├── config.toml
 │       ├── hyper.toml
+│       ├── run/
+│       │   └── PID file, etc.
 │       └── bin/
 │           ├── network_01.nn
 │           └── animusd-network_01

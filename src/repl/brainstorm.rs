@@ -1,4 +1,6 @@
 
+// TODO Errors
+
 use clap::{ Parser, Subcommand };
 use clap_repl::ClapEditor;
 use clap_repl::reedline::{ DefaultPrompt, DefaultPromptSegment };
@@ -165,7 +167,6 @@ fn list_all_animi() {
 }
 
 // Print a list of all network files that appear in the `saved` directory.
-// TODO: Filter out non-`.nn` files
 fn list_saved_networks() {
     let saved = read_saved();
     for network in saved {
@@ -173,7 +174,9 @@ fn list_saved_networks() {
             .expect("Access network metadata. If you are seeing this message, your `saved` directory contains an unrecognized filestructure or you lack permission to access it.");
         let name = network.file_name().into_string()
             .expect("Network name must be a valid string. If you are seeing this message, your `saved` directory contains an unrecognized filestructure or you lack permission to access it.");
-        println!("{}", name) 
+        if name.ends_with(".nn") {
+            println!("{}", name) 
+        }
     }
 }
 
