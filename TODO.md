@@ -1,5 +1,8 @@
 
-Config loop
+- Config loop
+- Allow rename even if the network name would be valid.
+- Warn about reconfiguring animus for an existing animus/network
+
 
 ## More capabilities
 - [ ] Phantom limb fuzzing

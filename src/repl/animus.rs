@@ -103,7 +103,7 @@ pub(crate) fn animus_manager_repl(animus_name: &str) {
                         if let Some(csv) = response.unwrap() {
                             // Structures will be listed as a CSV string,
                             // Needs to be split and listed vertically.
-                            let values = csv.split(",").collect();
+                            let values: Vec<_> = csv.split(",").collect();
                             for value in values {
                                 println!("{}", value);
                             }

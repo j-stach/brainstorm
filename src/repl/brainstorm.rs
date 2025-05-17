@@ -1,6 +1,4 @@
 
-// TODO Errors
-
 use clap::{ Parser, Subcommand };
 use clap_repl::ClapEditor;
 use clap_repl::reedline::{ DefaultPrompt, DefaultPromptSegment };
@@ -8,6 +6,7 @@ use clap_repl::reedline::{ DefaultPrompt, DefaultPromptSegment };
 use std::path::Path;
 
 use crate::helpers::*;
+use crate::error::SetupError;
 
 
 #[derive(Parser)]
@@ -29,9 +28,9 @@ enum Command {
     Animate {
         #[arg(
             help = 
-"Provide the path to the `.nn` file that holds the network to be animated.
+"Provide the name of the `.nn` file that holds the network to be animated.
 Brainstorm will search for the file in ~/.brainstorm/saved.
-Use `list-networks` to view saved network filenames." 
+Use `list-networks` to view saved network names." 
         )]
         network: std::path::PathBuf
     },
@@ -59,6 +58,9 @@ View active Animi using the `list-active` command."
         animus_name: String
     },
 
+    /// Count all Animi that are currently active on this device.
+    CountActive,
+
     /// List all Animi that are currently active on this device.
     ListActive,
 
@@ -71,7 +73,7 @@ View active Animi using the `list-active` command."
     /// Exit Brainstorm (This will not affect any active Animi).
     Quit,
 
-    // TBD: AddLobe
+    // TODO: AddLobe
 }
 
 
@@ -94,9 +96,13 @@ pub(crate) fn brainstorm_repl() {
         match cli.command {
 
             Command::Quit => {
-                // TODO: "There are X animi still running across Y devices."
+                count_active_animi();
                 println!("Goodbye!");
                 std::process::exit(0);
+            },
+
+            Command::CountActive => {
+                count_active_animi()
             },
 
             Command::ListActive => {
@@ -128,8 +134,6 @@ pub(crate) fn brainstorm_repl() {
                 }
             },
 
-            // TBD: Remote animus startup, connection via SSH
-
         }
     });
 
@@ -138,9 +142,31 @@ pub(crate) fn brainstorm_repl() {
 
 /* Helper functions */
 
+// Count all active animi that can be found in the `animi` directory.
+// Expects that all files within have valid animus filestructures.
+fn count_active_animi() {
+
+    let mut count = 0;
+    let animi = read_animi();
+
+    for animus in animi {
+        let animus = animus
+            .expect("Access animus metadata. If you are seeing this message, your `animi` directory contains an unrecognized filestructure or you lack permission to access it.");
+        let name = animus.file_name().into_string()
+            .expect("Animus name must be a valid string. If you are seeing this message, your `animi` directory contains an unrecognized filestructure or you lack permission to access it.");
+        if animus_is_active(&name).unwrap() {
+            count += 1
+        }
+    }
+
+    println!("There are {} active animi currently running.", count)
+}
+
+
 // Print a list of all active animi that can be found in the `animi` directory.
 // Expects that all files within have valid animus filestructures.
 fn list_active_animi() {
+
     let animi = read_animi();
     for animus in animi {
         let animus = animus
@@ -153,9 +179,11 @@ fn list_active_animi() {
     }
 }
 
+
 // Print a list of all files that appear in the `animi` directory.
 // Expects that all files within have valid animus filestructures.
 fn list_all_animi() {
+
     let animi = read_animi();
     for animus in animi {
         let animus = animus
@@ -166,8 +194,10 @@ fn list_all_animi() {
     }
 }
 
+
 // Print a list of all network files that appear in the `saved` directory.
 fn list_saved_networks() {
+
     let saved = read_saved();
     for network in saved {
         let network = network
@@ -179,6 +209,7 @@ fn list_saved_networks() {
         }
     }
 }
+
 
 // Load an existing but inactive animus.
 fn load_animus(animus_name: &str) {
@@ -214,6 +245,7 @@ fn load_animus(animus_name: &str) {
     }
 }
 
+
 // Create a new animus setup for the given network.
 fn animate_network(network_filename: &str) {
 
@@ -244,14 +276,12 @@ fn animate_network(network_filename: &str) {
     }
 }
 
+
 // Set up a new animus directory, animusd executable, and all necessary files.
-fn animus_setup(network_filename: &str) -> anyhow::Result<String> {
+fn animus_setup(network_filename: &str) -> Result<String, SetupError> {
 
     if !network_filename.ends_with(".nn") {
-        // TODO: invalid file name error type
-        return Err(anyhow::anyhow!(
-            "Invalid file type: Expected `.nn` file extension."
-        ))
+        return Err(SetupError::BadFilename(network_filename.to_string()))
     }
 
     let animus_name = network_filename.strip_suffix(".nn")
@@ -263,8 +293,7 @@ fn animus_setup(network_filename: &str) -> anyhow::Result<String> {
     let animus_name = rename_animus(animus_name)?;
 
     if animus_name.is_none() {
-        // TODO: Separate warning from error handling?
-        return Err(anyhow::anyhow!("WARN: Animus setup aborted"))
+        return Err(SetupError::SetupAborted)
     }
 
     // Safe because we check for it above.
@@ -279,19 +308,18 @@ fn animus_setup(network_filename: &str) -> anyhow::Result<String> {
     }
 
     // Run the REPL to generate config.
-    // WARN: REPL expects the animus_name is valid.
+    // WARNING: REPL expects the animus_name is valid.
     super::animus_config_repl(&animus_name);
     build_animus(&animus_name)?;
 
     Ok(animus_name)
 }
 
+
 // Check if the proposed animus name is valid, then rename it if necessary.
-fn rename_animus(mut animus_name: String) -> anyhow::Result<Option<String>> {
+fn rename_animus(mut animus_name: String) -> Result<Option<String>, SetupError> {
 
     let mut valid_name = valid_animus_name(&animus_name);
-
-    // TODO: Allow rename even if the network name would be valid.
 
     while !valid_name && &animus_name != "" {
         if valid_animus_name(&animus_name) {
@@ -324,8 +352,9 @@ fn rename_animus(mut animus_name: String) -> anyhow::Result<Option<String>> {
     }
 }
 
+
 // Download a unique `animusd` executable for an animus, based on lib features.
-fn build_animus(animus_name: &str) -> anyhow::Result<()> {
+fn build_animus(animus_name: &str) -> Result<(), SetupError> {
 
     // Build the animusd executable with the features specified.
     let animus_dir = animus_dir(&animus_name);
@@ -340,8 +369,7 @@ fn build_animus(animus_name: &str) -> anyhow::Result<()> {
 
     let result = cmd.output()?;
     if !result.status.success() {
-        // TODO: Configuration syntax error type
-        return Err(anyhow::anyhow!("Invalid features in string: {}", features))
+        return Err(SetupError::InvalidFeatures(features.to_string()))
     }
 
     // Rename the service executable to distinguish it as a process.
@@ -353,8 +381,7 @@ fn build_animus(animus_name: &str) -> anyhow::Result<()> {
 
     let result = cmd.output()?;
     if !result.status.success() {
-        // TODO: Setup error type
-        return Err(anyhow::anyhow!("An error occured when renaming animusd."))
+        return Err(SetupError::ExecutionFailed("mv".to_string()))
     }
 
     // Make animusd executable.
@@ -363,15 +390,15 @@ fn build_animus(animus_name: &str) -> anyhow::Result<()> {
 
     let result = cmd.output()?;
     if !result.status.success() {
-        // TODO: Setup error type
-        return Err(anyhow::anyhow!("A permissions error occurred."))
+        return Err(SetupError::ExecutionFailed("chmod".to_string()))
     }
 
     Ok(())
 }
 
+
 // Execute the animusd service for an animus.
-fn launch_animus(animus_name: &str) -> anyhow::Result<()> {
+fn launch_animus(animus_name: &str) -> Result<(), SetupError> {
 
     let animus_dir = animus_dir(&animus_name);
     let bin_path = format!("{}/bin/animusd-{}", &animus_dir, &animus_name);
@@ -381,8 +408,7 @@ fn launch_animus(animus_name: &str) -> anyhow::Result<()> {
 
     let result = cmd.output()?;
     if !result.status.success() {
-        // TODO: Setup error type
-        return Err(anyhow::anyhow!("Failed to launch animus executable."))
+        return Err(SetupError::ExecutionFailed("animusd".to_string()))
     }
 
     Ok(())

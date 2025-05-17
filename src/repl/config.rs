@@ -29,25 +29,30 @@ enum AnimusConfig {
 
     /// Return to the parent Brainstorm REPL.
     Return,
+
+    Mindreader {
+        #[arg(
+            help = ("")
+        )]
+        add: String
+    },
+
 }
 
 
 // Spawns an inner REPL for creating an animus configuration.
 // WARN: Expects that `animus_name` contains only valid characters.
 pub(crate) fn animus_config_repl(animus_name: &str) {
-    println!("Configuring animus '{}'...", animus_name);
 
-    // TODO: Warn about reconfiguring animus for a network
+    println!("Configuring animus '{}'...", animus_name);
 
     let animus_root = format!("~/.brainstorm/animi/{}", animus_name);
     let animus_path = Path::new(&animus_root);
     let config_path = animus_path.join("config.toml");
 
-    // TODO: Copy the config.toml template from animusd
-    // Or, find the existing one and use that
-    let mut config_toml: toml::Value = String::from("[test]")
-        .parse()
-        .unwrap();
+    let mut ip = String::new();
+    let mut mindreader = Vec::new();
+    let mut features = Vec::new();
 
     let prompt = format!("{}/config", animus_name);
     let prompt = DefaultPrompt {
@@ -69,6 +74,10 @@ pub(crate) fn animus_config_repl(animus_name: &str) {
                 AnimusConfig::Return => {
                     run_config = false
                 },
+
+                AnimusConfig::Mindreader { add } => {
+                    add_mindreader_layer(add)
+                },           
             },
 
             ReadCommandOutput::EmptyLine => { /* Do nothing */ },
@@ -81,12 +90,19 @@ pub(crate) fn animus_config_repl(animus_name: &str) {
         }
     }
 
-    let config_string = toml::to_string_pretty(&config_toml)
-        .expect("Convert TOML to string");
-
-    // NOTE: Overwrites existing config.toml
-    std::fs::write(config_path, config_string)
-        .expect("Write config.toml to animus directory");
+    animusd_lib::config::generate_config_from_values(
+        config_path,
+        animus_name,
+        animusd_lib::VERSION,
+        ip,
+        mindreader,
+        features
+    )
 }
 
+
+fn add_mindreader_layer(layer_name: &str, mindreader: Vec<String>) {
+    // TODO: Check mindreader layer eligibility
+    // Add layer to mindreader string
+}
 

@@ -2,6 +2,7 @@
 mod setup;
 mod repl;
 mod helpers;
+mod error;
 
 fn main() {
 
