@@ -1,11 +1,18 @@
 
-- Config loop
-- Allow rename even if the network name would be valid.
-- Warn about reconfiguring animus for an existing animus/network
+## Quality of life features
+- [ ] Config loop
+- [ ] Allow rename even if the network name would be valid.
+- [ ] Warn about reconfiguring animus for an existing animus/network
+
+
+## Connection generation
+- [ ] Brainstorm needs "modify" mode for working with SerialComplex before load
+- [ ] Brainstorm needs Input port conflict detection & resolution
 
 
 ## More capabilities
-- [ ] Phantom limb fuzzing
+- [ ] Phantom limb sensor/motor instance load from binary
+- [ ] Sensor/motor commands for management?
 
 ## Distributed services
 - [ ] Connecting to Animi on other computers, with authentication (lobes) using SSH (prompt for password)
