@@ -1,3 +1,4 @@
+
 [package]
 name = "brainstorm"
 description = "Neuroscience for Engineers"
@@ -17,4 +18,5 @@ animusd = { path = "/home/jordan/projs/animusd" }
 regex = "1.11.1"
 toml = "0.8.21"
 thiserror = "2.0.12"
+
 

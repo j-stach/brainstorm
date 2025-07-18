@@ -9,6 +9,12 @@
 - [ ] Brainstorm needs "modify" mode for working with SerialComplex before load
 - [ ] Brainstorm needs Input port conflict detection & resolution
 
+## XX
+- [ ] Brainstorm needs to load & modify Complex without immediately running it
+- [ ] Brainstorm needs to query complex for connection-related info, at minimum
+- [ ] Brainstorm should be able to run PhantomLimb instances using animus-like executable
+
+
 
 ## More capabilities
 - [ ] Phantom limb sensor/motor instance load from binary
