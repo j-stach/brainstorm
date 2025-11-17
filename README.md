@@ -3,7 +3,7 @@
 > -- Morpheus, *The Matrix*
 
 # Brainstorm
-This is a tool for animating and managing neural networks created using the [Cajal](https://github.com/j-stach/cajal) framework.
+This is a tool for animating and managing neural networks created using the [Cajal framework](https://github.com/j-stach/cajal).
 
 
 ## Set up
@@ -14,12 +14,12 @@ This is a tool for animating and managing neural networks created using the [Caj
 ```
 cargo install brainstorm
 ```
-5. To generate the necessary files and directory structure, run:
+5. Generate the framework directory structure:
 ```
 brainstorm --setup
 ```
 This command will preserve `~/.cajal/hyper.toml` and any other files you have already set up. <br>
-(See the [setup guide](/docs/setup_guide.md) for more info.)
+(See the [setup guide](/docs/setup_guide.md) for more information.)
 
 ### Add networks
 Brainstorm manages spiking neural networks created with [`cajal`](https://crates.io/crates/cajal), which use the `.nn` file extension.
@@ -27,7 +27,6 @@ Add raw networks to the `~/.cajal/saved/` directory to make them discoverable th
 
 
 ## Use
-### Run
 To open the REPL, run:
 ```
 brainstorm
@@ -35,15 +34,15 @@ brainstorm
 
 ### Commands
 These commands are used to interact with network files and animi at the top level.
-| Command | Arg | Purpose |
-|---------|-----|---------|
-|`list-networks`| | List all `.nn` files in `~/.cajal/saved/` |
-|`animate`|`network=my_network`| Generate a new animus for `my_network.nn` |
-|`list-all`| | List all animi saved in `~/.cajal/animi/` |
-|`load`|`animus=my_network`| Launch (activate) the animus named `my_network` |
-|`list-active`| | List all active animi |
-|`select`|`animus=my_network`| Enter an animus-specific REPL for `my_network` to issue commands |
-|`quit` or `exit`| | Close the REPL and exit Brainstorm |
+| Command | Purpose |
+|---------|---------|
+|`list-networks`| List all `.nn` files in `~/.cajal/saved/` |
+|`animate network=my_network`| Generate a new animus for `my_network.nn` |
+|`list-all`| List all animi saved in `~/.cajal/animi/` |
+|`load animus=my_network`| Launch (activate) the animus named `my_network` |
+|`list-active`| List all active animi |
+|`select animus=my_network`| Enter an animus-specific REPL for `my_network` to issue commands |
+|`quit` or `exit`| Close the REPL and exit Brainstorm |
 
 ### Animus Commands
 These commands are used to control individual animi via the protocol from `animusd_lib`.
@@ -60,19 +59,12 @@ These commands are used to control individual animi via the protocol from `animu
 |`back`| Return to the top-level REPL without terminating |
 
 
-## Other uses
-*TBD: Distributed computing*
-
-
 ## Configuration 
-The Cajal framework has configurable parameters for many of its components, and these influence how networks operate and interact with Brainstorm.
-
-### Core library
-Default hyperparameters for neurotransmission can be configured in `~/.cajal/hyper.toml` if the parameters provided by the core library are insufficient for your use case.
-
-### Animus-specific configuration
-Animus-specific hyperparameters can be configured in `~/.cajal/animi/my_network/hyper.toml`.
-To modify the animus runtime (for example, to enable or disable logging), configure `~/.cajal/animi/my_network/config.toml` before loading.
+### Core
+Default hyperparameters for neurotransmission can be reconfigured in `~/.cajal/hyper.toml`.
+### Animus
+Animus-specific hyperparameters can be configured in `~/.cajal/animi/my_network/hyper.toml`. <br>
+To configure the animus runtime (for example, to enable or disable logging), modify `~/.cajal/animi/my_network/config.toml` before loading the animus.
 
 
 # Development
