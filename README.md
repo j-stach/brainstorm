@@ -22,9 +22,9 @@ brainstorm --setup
 This command will preserve `~/.cajal/hyper.toml` and any other files you have already set up. <br>
 
 ### Configuration:
-- Default library hyperparameters can be reconfigured in `~/.cajal/hyper.toml`
-- Animus-specific hyperparameters can be configured in `~/.cajal/animi/my_network/hyper.toml`
-- Animus runtime can be configured in `~/.cajal/animi/my_network/config.toml` before it is loaded
+- Default library hyperparameters can be reconfigured in `~/.cajal/neuron.cfg`
+- Animus-specific hyperparameters can be configured in `~/.cajal/animi/my_network/neuron.cfg`
+- Service behavior can be configured in `~/.cajal/animi/my_network/animus.cfg` before it is loaded
 
 ### Networks:
 Brainstorm manages spiking neural networks created with [`cajal`](https://crates.io/crates/cajal), which use the `.nn` file extension.
