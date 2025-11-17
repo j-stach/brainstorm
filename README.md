@@ -6,7 +6,7 @@
 This is a tool for animating and managing neural networks created using the [Cajal framework](https://github.com/j-stach/cajal).
 
 
-## Set up
+## Set Up
 1. Use Linux.
 2. [Install Rust.](https://www.rust-lang.org/tools/install)
 3. Ensure `~/.cargo/bin/` is in `PATH`.
@@ -26,6 +26,14 @@ Brainstorm manages spiking neural networks created with [`cajal`](https://crates
 Add raw networks to the `~/.cajal/saved/` directory to make them discoverable through Brainstorm.
 
 
+## Configuration 
+### Core
+Default hyperparameters for neurotransmission can be reconfigured in `~/.cajal/hyper.toml`.
+### Animus
+Animus-specific hyperparameters can be configured in `~/.cajal/animi/my_network/hyper.toml`. <br>
+Animus runtime can be configured in `~/.cajal/animi/my_network/config.toml` before loading the animus.
+
+
 ## Use
 To open the REPL, run:
 ```
@@ -36,16 +44,16 @@ brainstorm
 These commands are used to interact with network files and animi at the top level.
 | Command | Purpose |
 |---------|---------|
-|`list-networks`| List all `.nn` files in `~/.cajal/saved/` |
 |`animate network=my_network`| Generate a new animus for `my_network.nn` |
-|`list-all`| List all animi saved in `~/.cajal/animi/` |
 |`load animus=my_network`| Launch (activate) the animus named `my_network` |
-|`list-active`| List all active animi |
 |`select animus=my_network`| Enter an animus-specific REPL for `my_network` to issue commands |
+|`list-networks`| List all `.nn` files in `~/.cajal/saved/` |
+|`list-all`| List all animi saved in `~/.cajal/animi/` |
+|`list-active`| List all active animi |
 |`quit` or `exit`| Close the REPL and exit Brainstorm |
 
 ### Animus Commands
-These commands are used to control individual animi via the protocol from `animusd_lib`.
+These commands are used to control individual animi via the protocol from [`animusd_lib`](https://docs.rs/animusd/latest/animusd_lib).
 | Command | Purpose |
 |---------|---------|
 |`name`| Retrieve the name of the network managed by this animus |
@@ -59,15 +67,7 @@ These commands are used to control individual animi via the protocol from `animu
 |`back`| Return to the top-level REPL without terminating |
 
 
-## Configuration 
-### Core
-Default hyperparameters for neurotransmission can be reconfigured in `~/.cajal/hyper.toml`.
-### Animus
-Animus-specific hyperparameters can be configured in `~/.cajal/animi/my_network/hyper.toml`. <br>
-To configure the animus runtime (for example, to enable or disable logging), modify `~/.cajal/animi/my_network/config.toml` before loading the animus.
-
-
 # Development
-Brainstorm is a work-in-progress.
+Brainstorm is a work-in-progress. <br>
 Active priorities are tracked in [`TODO.md`](/TODO.md).
 
