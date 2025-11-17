@@ -21,14 +21,14 @@ brainstorm --setup
 ```
 This command will preserve `~/.cajal/hyper.toml` and any other files you have already set up. <br>
 
-### Networks:
-Brainstorm manages spiking neural networks created with [`cajal`](https://crates.io/crates/cajal), which use the `.nn` file extension.
-Add new networks to the `~/.cajal/saved/` directory to make them discoverable through Brainstorm.
-
 ### Configuration:
 - Default library hyperparameters can be reconfigured in `~/.cajal/hyper.toml`
 - Animus-specific hyperparameters can be configured in `~/.cajal/animi/my_network/hyper.toml`
 - Animus runtime can be configured in `~/.cajal/animi/my_network/config.toml` before it is loaded
+
+### Networks:
+Brainstorm manages spiking neural networks created with [`cajal`](https://crates.io/crates/cajal), which use the `.nn` file extension.
+Add new networks to the `~/.cajal/saved/` directory to make them discoverable through Brainstorm.
 
 ----
 
@@ -64,6 +64,6 @@ These commands are used to control individual animi via the protocol from [`anim
 |`terminate`| Shut down the animus service and return to the top-level REPL |
 |`back`| Return to the top-level REPL without terminating |
 
-\* *This does not immediately cease neurotransmission. Activity may continue for some time, even in absence of stimulation (signal input).*
+\* *Note: This does not immediately cease neurotransmission. Activity may continue for some time, even in absence of stimulation (signal input).*
 
 ----
