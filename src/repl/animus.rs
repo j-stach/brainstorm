@@ -1,5 +1,5 @@
 
-// This aligns with the capabilities of the `cajal-animus` 
+// This aligns with the capabilities of the `animusd` protocol 
 // and executes the stored commands via the dedicated 4048 port.
 
 

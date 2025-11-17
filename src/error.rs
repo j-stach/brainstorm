@@ -1,4 +1,6 @@
 
+// TODO: REDO errors entirely
+
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum SetupError {
 

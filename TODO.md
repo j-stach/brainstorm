@@ -1,33 +1,48 @@
 
-## TODO for crate:
-- [ ] Switch framework root to `~/.cajal`
+# TODO for Cajal Framework
+- Update file expectations in Cajal's build process.
+- `ezcfg` to replace `toml` dependency
+- `cajal-protocol` to replace IO (tract) transmission
+- Options for tracts to perform batching
 
-## Readme
-### Tutorial:
-- [x] Install/build
-- [x] Load network & start animus
-- [x] Save state & shutdown
+
+## TODO for crate:
+- [x] Switch framework root to `~/.cajal`
+- [ ] ERRORS redo & move away from `anyhow`
+
+## Setup
+- [x] Set up framework directory structure, (skip folders that are already present)
+
+## Exec & flags
+- [ ] Launch clap from main.rs
+- [ ] `--setup` flag to create or repair the framework directory
+- [ ] `--version` flag to get the version of `brainstorm`
+- [ ] `--run` flag to run after applying flags
+
+## Top-level Commands
+- [ ] Rework to fit the README documentation
+- [ ] `list-active` needs to ping 4048 for a report from all animi 
+(in case a directory was mistakenly deleted)
+(This will mean better coordination of simultaneous msgs from shared port)
+
+## Animus Commands
+- [ ] Ensure current with `animusd`
+- [ ] Add notes about compatability (e.g., incompatible versions may partially interoperate) 
 
 ## Quality of life features
-- [ ] Config loop
+- [ ] "Config" loops for Brainstorm and animi, using `ezcfg`
 - [ ] Allow rename even if the network name would be valid.
 - [ ] Warn about reconfiguring animus for an existing animus/network
 
 
 ## Connection generation
-- [ ] Brainstorm needs "modify" mode for working with SerialComplex before load
-- [ ] Brainstorm needs Input port conflict detection & resolution
-
-## XX
-- [ ] Brainstorm needs to load & modify Complex without immediately running it
-- [ ] Brainstorm needs to query complex for connection-related info, at minimum
-- [ ] Brainstorm should be able to run PhantomLimb instances using animus-like executable
-
+- [ ] Needs "modify" mode for working with SerialComplex before load
+(Load & modify Complex without immediately running it)
+- [ ] Input port conflict detection & resolution
+- [ ] Or else, a way to non-permanently assign ports for Inputs & Outputs,
+(so that it can be handled by Brainstorm during load)
 
 ## Distributed services
-- [ ] Connecting to Animi on other computers, with authentication (lobes) using SSH (prompt for password)
-- [ ] Store connection & authentication in animus config, allowing you to control remotely without ssh
-
-## Errors
-- [ ] Dedicated thiserror types for config, setup, command, etc.
+- Need a way to centrally control the activation & interconnection of animi
+- Authentication handled by Brainstorm is fine for now
 

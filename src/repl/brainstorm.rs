@@ -13,7 +13,7 @@ use crate::error::SetupError;
 #[command(
     name = "brainstorm",
     about = "REPL for managing Animus services and networks",
-    long_about = "This is a tool for managing Animus services for Cajal-based simulated spiking neural networks.",
+    long_about = "A tool for managing Animus services for Cajal-based simulated spiking neural networks.",
 )]
 struct Cli {
     #[command(subcommand)]
@@ -29,7 +29,7 @@ enum Command {
         #[arg(
             help = 
 "Provide the name of the `.nn` file that holds the network to be animated.
-Brainstorm will search for the file in ~/.brainstorm/saved.
+Brainstorm will search for the file in ~/.cajal/saved.
 Use `list-networks` to view saved network names." 
         )]
         network: std::path::PathBuf
@@ -40,7 +40,7 @@ Use `list-networks` to view saved network names."
         #[arg(
             help = 
 "Provide the name of the Animus as it appears in the filesystem. 
-The Animus must have a directory set up on this device.
+Brainstorm will search for the animus in ~/.cajal/animi.
 View all available Animi using the `list-all` command."
         )]
         animus_name: String
@@ -58,22 +58,17 @@ View active Animi using the `list-active` command."
         animus_name: String
     },
 
-    /// Count all Animi that are currently active on this device.
-    CountActive,
-
     /// List all Animi that are currently active on this device.
     ListActive,
 
-    /// List all Animi that have data saved in ~/.brainstorm/animi/, including inactive Animi.
+    /// List all Animi that have data saved in ~/.cajal/animi/
     ListAll,
 
-    /// List all `.nn` networks found in ~/.brainstorm/saved/.
+    /// List all `.nn` networks found in ~/.cajal/saved/
     ListNetworks,
 
-    /// Exit Brainstorm (This will not affect any active Animi).
-    Quit,
-
-    // TODO: AddLobe
+    /// Exit Brainstorm. (This will not affect any active Animi.)
+    Quit, Exit,
 }
 
 
@@ -95,17 +90,14 @@ pub(crate) fn brainstorm_repl() {
     repl.repl(|cli: Cli| {
         match cli.command {
 
-            Command::Quit => {
+            Command::Quit | Command::Exit => {
                 count_active_animi();
                 println!("Goodbye!");
                 std::process::exit(0);
             },
 
-            Command::CountActive => {
-                count_active_animi()
-            },
-
             Command::ListActive => {
+                // TODO Need a ways to query all animi at 4048
                 list_active_animi()
             },
 
@@ -142,30 +134,11 @@ pub(crate) fn brainstorm_repl() {
 
 /* Helper functions */
 
-// Count all active animi that can be found in the `animi` directory.
-// Expects that all files within have valid animus filestructures.
-fn count_active_animi() {
-
-    let mut count = 0;
-    let animi = read_animi();
-
-    for animus in animi {
-        let animus = animus
-            .expect("Access animus metadata. If you are seeing this message, your `animi` directory contains an unrecognized filestructure or you lack permission to access it.");
-        let name = animus.file_name().into_string()
-            .expect("Animus name must be a valid string. If you are seeing this message, your `animi` directory contains an unrecognized filestructure or you lack permission to access it.");
-        if animus_is_active(&name).unwrap() {
-            count += 1
-        }
-    }
-
-    println!("There are {} active animi currently running.", count)
-}
-
-
 // Print a list of all active animi that can be found in the `animi` directory.
 // Expects that all files within have valid animus filestructures.
 fn list_active_animi() {
+
+    // TODO Need a ways to query all animi at 4048
 
     let animi = read_animi();
     for animus in animi {
@@ -177,6 +150,8 @@ fn list_active_animi() {
             println!("{}", name) 
         }
     }
+
+    // TODO Print total animi active 
 }
 
 

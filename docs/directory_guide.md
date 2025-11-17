@@ -3,13 +3,14 @@ TODO: Switch framework root to `~/.cajal`
 
 ## Directory structure:
 ```
-.brainstorm/
-├── cajal/
-│   └── hyper.toml
+.cajal/
+├── neuro.cfg
+├── brainstorm/
+│   └── config.toml
 ├── animi/
 │   └── my_network/
-│       ├── config.toml
-│       ├── hyper.toml
+│       ├── service.cfg
+│       ├── neuro.cfg
 │       ├── run/
 │       │   └── PID file, etc.
 │       └── bin/
