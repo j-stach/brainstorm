@@ -7,7 +7,7 @@ This is a tool for animating and managing neural networks created using the [Caj
 
 ----
 
-## Set Up
+### Set Up
 1. Use Linux.
 2. [Install Rust.](https://www.rust-lang.org/tools/install)
 3. Ensure `~/.cargo/bin/` is in `PATH`.
@@ -58,17 +58,17 @@ These commands are used to control individual animi via the protocol from [`anim
 |`name`| Retrieve the name of the network managed by this animus |
 |`list-structures`| List the names of all sub-structures in the network |
 |`wake`| Start the neurotransmission runtime to begin processing signals |
-|`sleep`| Ignore new stimuli and spin down neurotransmission\* |
+|`sleep`| Ignore new stimuli and spin down neurotransmission \* |
 |`status`| Display asleep/awake status |
 |`save`| Serialize and overwrite the network |
 |`terminate`| Shut down the animus service and return to the top-level REPL |
 |`back`| Return to the top-level REPL without terminating |
 
-\* *Note: This does not immediately cease neurotransmission. Activity may continue for some time, even in absence of stimulation (signal input).*
+\* *This does not immediately cease neurotransmission. Activity may continue for some time, even in absence of stimulation (signal input).*
 
 ----
 
-# Development
-Brainstorm is a work-in-progress. <br>
+## Development
+Brainstorm is a work-in-progress. 
 Active priorities are tracked in [`TODO.md`](/TODO.md).
 
