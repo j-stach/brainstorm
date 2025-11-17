@@ -29,7 +29,7 @@ Add raw networks to the `~/.cajal/saved/` directory to make them discoverable th
 ## Configuration 
 - Default hyperparameters for neurotransmission can be reconfigured in `~/.cajal/hyper.toml`.
 - Animus-specific hyperparameters can be configured in `~/.cajal/animi/my_network/hyper.toml`.
-- Animus runtime can be configured in `~/.cajal/animi/my_network/config.toml` before loading the animus.
+- Animus runtime can be configured in `~/.cajal/animi/my_network/config.toml` before it is loaded.
 
 
 ## Use
