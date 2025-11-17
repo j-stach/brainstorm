@@ -1,4 +1,13 @@
 
+## TODO for crate:
+- [ ] Switch framework root to `~/.cajal`
+
+## Readme
+### Tutorial:
+- [x] Install/build
+- [x] Load network & start animus
+- [x] Save state & shutdown
+
 ## Quality of life features
 - [ ] Config loop
 - [ ] Allow rename even if the network name would be valid.
@@ -15,11 +24,6 @@
 - [ ] Brainstorm should be able to run PhantomLimb instances using animus-like executable
 
 
-
-## More capabilities
-- [ ] Phantom limb sensor/motor instance load from binary
-- [ ] Sensor/motor commands for management?
-
 ## Distributed services
 - [ ] Connecting to Animi on other computers, with authentication (lobes) using SSH (prompt for password)
 - [ ] Store connection & authentication in animus config, allowing you to control remotely without ssh
@@ -27,21 +31,3 @@
 ## Errors
 - [ ] Dedicated thiserror types for config, setup, command, etc.
 
-## Directory structure:
-
-```
-.brainstorm/
-├── cajal/
-│   └── hyper.toml
-├── animi/
-│   └── network_01/
-│       ├── config.toml
-│       ├── hyper.toml
-│       ├── run/
-│       │   └── PID file, etc.
-│       └── bin/
-│           ├── network_01.nn
-│           └── animusd-network_01
-└── saved/
-    └── network_01.nn
-```
