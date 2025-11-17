@@ -7,7 +7,7 @@ This is a tool for animating and managing neural networks created using the [Caj
 
 ----
 
-### Set Up
+## Set Up
 1. Use Linux.
 2. [Install Rust.](https://www.rust-lang.org/tools/install)
 3. Ensure `~/.cargo/bin/` is in `PATH`.
@@ -21,11 +21,11 @@ brainstorm --setup
 ```
 This command will preserve `~/.cajal/hyper.toml` and any other files you have already set up. <br>
 
-### Add networks
+### Add networks:
 Brainstorm manages spiking neural networks created with [`cajal`](https://crates.io/crates/cajal), which use the `.nn` file extension.
 Add raw networks to the `~/.cajal/saved/` directory to make them discoverable through Brainstorm.
 
-### Configuration
+### Configuration:
 - Default library hyperparameters can be reconfigured in `~/.cajal/hyper.toml`
 - Animus-specific hyperparameters can be configured in `~/.cajal/animi/my_network/hyper.toml`
 - Animus runtime can be configured in `~/.cajal/animi/my_network/config.toml` before it is loaded
@@ -33,7 +33,7 @@ Add raw networks to the `~/.cajal/saved/` directory to make them discoverable th
 ----
 
 ## Use
-To open the REPL, run:
+To launch the REPL, run:
 ```
 brainstorm
 ```
@@ -67,8 +67,3 @@ These commands are used to control individual animi via the protocol from [`anim
 \* *This does not immediately cease neurotransmission. Activity may continue for some time, even in absence of stimulation (signal input).*
 
 ----
-
-## Development
-Brainstorm is a work-in-progress. 
-Active priorities are tracked in [`TODO.md`](/TODO.md).
-
