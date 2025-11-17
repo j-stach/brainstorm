@@ -3,7 +3,7 @@
 > -- Morpheus, *The Matrix*
 
 # Brainstorm
-This is a tool for animating and managing neural networks created using the [Cajal framework](https://github.com/j-stach/cajal).
+A tool for animating and managing neural networks created using the [Cajal framework](https://github.com/j-stach/cajal).
 
 ----
 
@@ -21,9 +21,9 @@ brainstorm --setup
 ```
 This command will preserve `~/.cajal/hyper.toml` and any other files you have already set up. <br>
 
-### Add networks:
+### Networks:
 Brainstorm manages spiking neural networks created with [`cajal`](https://crates.io/crates/cajal), which use the `.nn` file extension.
-Add raw networks to the `~/.cajal/saved/` directory to make them discoverable through Brainstorm.
+Add new networks to the `~/.cajal/saved/` directory to make them discoverable through Brainstorm.
 
 ### Configuration:
 - Default library hyperparameters can be reconfigured in `~/.cajal/hyper.toml`
@@ -38,7 +38,7 @@ To launch the REPL, run:
 brainstorm
 ```
 
-### Commands
+### Commands:
 These commands are used to interact with network files and animi at the top level.
 | Command | Purpose |
 |---------|---------|
@@ -50,7 +50,7 @@ These commands are used to interact with network files and animi at the top leve
 |`list-active`| List all animi that are active and listening for commands |
 |`quit` or `exit`| Close the REPL and exit Brainstorm |
 
-### Animus Commands
+### Animus Commands:
 These commands are used to control individual animi via the protocol from [`animusd_lib`](https://docs.rs/animusd/latest/animusd_lib).
 | Command | Purpose |
 |---------|---------|
