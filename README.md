@@ -10,7 +10,7 @@ This is a tool for animating and managing neural networks created using the [Caj
 1. Use Linux.
 2. [Install Rust.](https://www.rust-lang.org/tools/install)
 3. Ensure `~/.cargo/bin/` is in `PATH`.
-4. Build Brainstorm from source:
+4. Build from source:
 ```
 cargo install brainstorm
 ```
@@ -19,7 +19,6 @@ cargo install brainstorm
 brainstorm --setup
 ```
 This command will preserve `~/.cajal/hyper.toml` and any other files you have already set up. <br>
-(See the [setup guide](/docs/setup_guide.md) for more information.)
 
 ### Add networks
 Brainstorm manages spiking neural networks created with [`cajal`](https://crates.io/crates/cajal), which use the `.nn` file extension.
@@ -27,9 +26,9 @@ Add raw networks to the `~/.cajal/saved/` directory to make them discoverable th
 
 
 ## Configuration 
-- Default hyperparameters for neurotransmission can be reconfigured in `~/.cajal/hyper.toml`.
-- Animus-specific hyperparameters can be configured in `~/.cajal/animi/my_network/hyper.toml`.
-- Animus runtime can be configured in `~/.cajal/animi/my_network/config.toml` before it is loaded.
+- Default hyperparameters for neurotransmission can be reconfigured in `~/.cajal/hyper.toml`
+- Animus-specific hyperparameters can be configured in `~/.cajal/animi/my_network/hyper.toml`
+- Animus runtime can be configured in `~/.cajal/animi/my_network/config.toml` before it is loaded
 
 
 ## Use
@@ -47,15 +46,15 @@ These commands are used to interact with network files and animi at the top leve
 |`select animus=my_network`| Enter an animus-specific REPL for `my_network` to issue commands |
 |`list-networks`| List all `.nn` files in `~/.cajal/saved/` |
 |`list-all`| List all animi saved in `~/.cajal/animi/` |
-|`list-active`| List all active animi |
+|`list-active`| List all animi that are active and listening for commands |
 |`quit` or `exit`| Close the REPL and exit Brainstorm |
 
 ### Animus Commands
 These commands are used to control individual animi via the protocol from [`animusd_lib`](https://docs.rs/animusd/latest/animusd_lib).
 | Command | Purpose |
 |---------|---------|
-|`name`| Retrieve the name of the network managed by this animus |
 |`version`| Retrieve the version of `animusd` used by this animus |
+|`name`| Retrieve the name of the network managed by this animus |
 |`list-structures`| List the names of all sub-structures in the network |
 |`wake`| Start the neurotransmission runtime to begin processing signals |
 |`sleep`| Stop processing new inputs and spin down activity |
