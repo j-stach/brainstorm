@@ -1,8 +1,6 @@
 
 mod setup;
 mod repl;
-mod helpers;
-mod error;
 
 fn main() {
 
@@ -21,6 +19,6 @@ fn main() {
     */
 
     // Run the loop:
-    repl::brainstorm_repl();
+    repl::run();
 }
 

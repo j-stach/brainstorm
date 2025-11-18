@@ -1,15 +1,12 @@
 
-// This aligns with the capabilities of the `animusd` protocol 
-// and executes the stored commands via the dedicated 4048 port.
-
+//! This aligns with the capabilities of the `animusd` protocol 
+//! and executes the stored commands via port 4048.
 
 use clap::{ Parser, Subcommand };
 use clap_repl::{ ClapEditor, ReadCommandOutput };
 use clap_repl::reedline::{ DefaultPrompt, DefaultPromptSegment };
 
 use animusd_lib::protocol::AnimusAction::*;
-
-use crate::helpers::*;
 
 
 #[derive(Parser)]
@@ -56,7 +53,7 @@ enum AnimusCommand {
 
 
 // Spawns an inner REPL for sending animus commands.
-pub(crate) fn animus_manager_repl(animus_name: &str) {
+pub(super) fn command_repl(animus_name: &str) {
 
     println!("Selected animus '{}'", animus_name);
 
@@ -160,5 +157,59 @@ pub(crate) fn animus_manager_repl(animus_name: &str) {
         }
     }
 
+}
+
+// Send command to associated IP address @ port 4048.
+// Get any animus response and parse results to string.
+// Returns an error if the network connection could not be established.
+fn send_command(
+    animus_name: &str, 
+    action: AnimusAction 
+) -> Result<Option<String>, CommandError> {
+
+    // Create socket to connect to the animus's host device
+    let ip_addr = read_animus_config(animus_name, "ip")?
+        .parse::<IpAddr>()?;
+
+    // TODO Authentication via `brainstorm.cfg`
+
+    let command = AnimusCommand::new(animus_name, action);
+    command.send_command(ip_addr)
+}
+
+// Unpack the response received by send_animus_command and print it.
+fn handle_response(
+    animus_name: &str, 
+    response: Result<Option<String>, CommandError>
+) {
+    if let Err(e) = response {
+        report_command_error(e);
+    } else {
+        // Unwrap is safe because we checked for errors above.
+        if let Some(value) = response.unwrap() {
+            println!("{}", value);
+        } else {
+            println!("No response from animus '{}'", animus_name);
+        }
+    }
+}
+
+// Log and display an error that occurred while sending an animus command.
+fn report_command_error(e: CommandError) {
+    println!("WARN: An error occurred: Command was not sent properly.");
+    eprintln!("{}", e);
+}
+
+// Check if an animus is currently active by pinging for its version number.
+pub(crate) fn is_active(animus_name: &str) -> Result<bool, CommandError> {
+
+    if !valid_animus_name(animus_name) {
+        return Err(CommandError::BadCommandSyntax(animus_name.to_string()))
+    }
+
+    match send_animus_command(animus_name, AnimusAction::Version)? {
+        Some(_) => Ok(true),
+        None => Ok(false),
+    }
 }
 
