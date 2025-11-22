@@ -6,7 +6,7 @@ use clap::{ Parser, Subcommand };
 use clap_repl::{ ClapEditor, ReadCommandOutput };
 use clap_repl::reedline::{ DefaultPrompt, DefaultPromptSegment };
 
-use animusd_lib::protocol::AnimusAction::*;
+use animusd_lib::protocol::Action::*;
 
 
 #[derive(Parser)]
@@ -57,6 +57,7 @@ pub(super) fn command_repl(animus_name: &str) {
 
     println!("Selected animus '{}'", animus_name);
 
+    // Set the prompt appearance
     let prompt = DefaultPrompt {
         left_prompt: DefaultPromptSegment::Basic(animus_name.to_owned()),
         ..DefaultPrompt::default()
@@ -66,10 +67,9 @@ pub(super) fn command_repl(animus_name: &str) {
         .with_prompt(Box::new(prompt))
         .build();
 
-    let mut run_manager = true;
+    // Execute commands:
+    loop {
 
-    // Logic for commands:
-    while run_manager {
         match inner_repl.read_command() {
             ReadCommandOutput::Command(cli) => match cli.command {
 
@@ -155,6 +155,9 @@ pub(super) fn command_repl(animus_name: &str) {
             _ => {}
 
         }
+
+        // Don't hog CPU!
+        std::thread::yield_now();
     }
 
 }
@@ -196,6 +199,7 @@ fn handle_response(
 
 // Log and display an error that occurred while sending an animus command.
 fn report_command_error(e: CommandError) {
+
     println!("WARN: An error occurred: Command was not sent properly.");
     eprintln!("{}", e);
 }

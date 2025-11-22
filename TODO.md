@@ -5,13 +5,22 @@
 - `cajal-protocol` to replace IO (tract) transmission
 - Options for tracts to perform batching
 
+- [ ] Helper functions reorganized/moved
+
+## Animus Commands
+Ensure current with `animusd`:
+- [ ] Add notes about compatability 
+- (e.g., incompatible versions may partially interoperate) 
+- [ ] build/install
+- [ ] pre-configuration
+- [ ] commands & responses
+
+
+
+
 
 ## TODO for crate:
-- [x] Switch framework root to `~/.cajal`
 - [ ] ERRORS redo & move away from `anyhow`
-
-## Setup
-- [x] Set up framework directory structure, (skip folders that are already present)
 
 ## Exec & flags
 - [ ] Launch clap from main.rs
@@ -24,10 +33,6 @@
 - [ ] `list-active` needs to ping 4048 for a report from all animi 
 (in case a directory was mistakenly deleted)
 (This will mean better coordination of simultaneous msgs from shared port)
-
-## Animus Commands
-- [ ] Ensure current with `animusd`
-- [ ] Add notes about compatability (e.g., incompatible versions may partially interoperate) 
 
 ## Quality of life features
 - [ ] "Config" loops for Brainstorm and animi, using `ezcfg`

@@ -17,7 +17,7 @@ use clap_repl::{
 #[command(
     name = "brainstorm",
     about = "REPL for managing Animus services and networks",
-    long_about = "A tool for managing Animus services for Cajal-based simulated spiking neural networks.",
+    // TODO long-about = "",
 )]
 struct Cli {
     #[command(subcommand)]
@@ -30,22 +30,20 @@ enum Command {
 
     /// Create a new Animus for the network provided, then activate it.
     Animate {
-        #[arg(
-            help = 
-"Provide the name of the `.nn` file that holds the network to be animated.
-Brainstorm will search for the file in ~/.cajal/saved.
-Use `list-networks` to view saved network names." 
+        #[arg( help = 
+            "Provide the name of the `.nn` network to be animated. \
+            Brainstorm will search for the file in ~/.cajal/saved. \n\
+            Use `list-networks` to view saved network names."
         )]
         network: std::path::PathBuf
     },
 
     /// Load and activate an Animus that is saved on this device.
     Load {
-        #[arg(
-            help = 
-"Provide the name of the Animus as it appears in the filesystem. 
-Brainstorm will search for the animus in ~/.cajal/animi.
-View all available Animi using the `list-all` command."
+        #[arg( help = 
+            "Provide the name of the Animus as it appears in the filesystem. \
+            Brainstorm will search for the animus in ~/.cajal/animi. \n\
+            View all available Animi using the `list-all` command."
         )]
         animus: String
     },
@@ -53,11 +51,10 @@ View all available Animi using the `list-all` command."
 
     /// Select an active Animus to manage.
     Select {
-        #[arg(
-            help = 
-"Provide the name of the Animus as it appears in the filesystem. 
-The Animus must currently be active.
-View active Animi using the `list-active` command."
+        #[arg( help = 
+            "Provide the name of the Animus as it appears in the filesystem. \
+            The Animus must currently be active. \n\
+            View active Animi using the `list-active` command."
         )]
         animus: String
     },
@@ -79,8 +76,9 @@ View active Animi using the `list-active` command."
 // Launch the top-level REPL and process commands.
 pub(crate) fn meta_repl() {
 
-    println!("Welcome to Brainstorm! For usage information, enter 'help'.");
+    println!("Welcome to Brainstorm! For usage information, enter 'help'");
 
+    // Set the prompt appearance
     let prompt = DefaultPrompt {
         left_prompt: DefaultPromptSegment::Basic("brainstorm".to_owned()),
         ..DefaultPrompt::default()
@@ -94,33 +92,40 @@ pub(crate) fn meta_repl() {
     repl.repl(|cli: Cli| {
         match cli.command {
 
+            // Exit Brainstorm
             Command::Quit | Command::Exit => {
                 println!("Goodbye!");
                 std::process::exit(0);
             },
 
+            // List all animi that are listening for commands
             Command::ListActive => {
                 // TODO Need a ways to query all animi at 4048
                 list::active_animi()
             },
 
+            // List all animi saved in ~/.cajal/animi 
             Command::ListAll => {
                 list::all_animi()
             },
 
+            // List all networks saved in ~/.cajal/saved
             Command::ListNetworks => {
                 list::saved_networks()
             },
 
+            // Configure and build
             Command::Animate { network } => {
                 let network_filename = network.display().to_owned();
                 animate::animate_network(&network_filename)
             },
 
+            // Launch an animus so it can begin receiving commands
             Command::Load { animus } => {
                 load::load_animus(&animus)
             },
 
+            // Select an active (loaded) animus to issue commands
             Command::Select { animus } => {
 
                 // TODO Needs to be able to send commands to animi that 
@@ -131,6 +136,8 @@ pub(crate) fn meta_repl() {
                     println!("Animus '{}' not found! Use `list-all`", &animus)
                 }
                 */
+
+                // TODO Query animus
 
                 super::animus::command_repl(&animus)
             },
