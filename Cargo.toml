@@ -4,7 +4,7 @@ name = "brainstorm"
 description = "Neuroscience for Engineers"
 authors = ["j-stach"]
 version = "0.0.0"
-edition = "2021"
+edition = "2024"
 repository = "https://github.com/j-stach/brainstorm"
 license = "GPL-3.0"
 readme = "README.md"
@@ -12,12 +12,12 @@ readme = "README.md"
 [dependencies]
 clap = "4.5.36"
 clap-repl = "0.3.2"
-anyhow = "1.0.98"
+anyhow = "1.0.98" # phase out
 ezcfg = "0.1.0"
 
 animusd = { path = "/home/jordan/projs/animusd" }
-regex = "1.11.1"
-toml = "0.8.21"
+regex = "1.11.1" # phase out
+toml = "0.8.21" # phase out
 thiserror = "2.0.12"
 
 

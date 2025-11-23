@@ -5,7 +5,12 @@
 - `cajal-protocol` to replace IO (tract) transmission
 - Options for tracts to perform batching
 
-- [ ] Helper functions reorganized/moved
+- [x] Helper functions reorganized/moved
+
+----
+
+## TODO for crate:
+- [ ] ERRORS redo & move away from `anyhow`
 
 ## Animus Commands
 Ensure current with `animusd`:
@@ -16,11 +21,6 @@ Ensure current with `animusd`:
 - [ ] commands & responses
 
 
-
-
-
-## TODO for crate:
-- [ ] ERRORS redo & move away from `anyhow`
 
 ## Exec & flags
 - [ ] Launch clap from main.rs
