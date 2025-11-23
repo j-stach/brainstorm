@@ -5,7 +5,20 @@
 - `cajal-protocol` to replace IO (tract) transmission
 - Options for tracts to perform batching
 
-- [x] Helper functions reorganized/moved
+----
+
+# TODO for crate
+- Setup & config for brainstorm
+- Init & run meta repl
+- Animus commands send & responses recv
+
+## Exec & flags
+- [x] Launch clap from main.rs
+- [x] `--setup` flag to create or repair the framework directory
+- [x] `--version` flag to get the version of `brainstorm`
+- [x] `--run` flag to run after applying flags
+
+
 
 ----
 
@@ -18,15 +31,9 @@ Ensure current with `animusd`:
 - (e.g., incompatible versions may partially interoperate) 
 - [ ] build/install
 - [ ] pre-configuration
-- [ ] commands & responses
+- [ ] commands & responses TCP->UDP
 
 
-
-## Exec & flags
-- [ ] Launch clap from main.rs
-- [ ] `--setup` flag to create or repair the framework directory
-- [ ] `--version` flag to get the version of `brainstorm`
-- [ ] `--run` flag to run after applying flags
 
 ## Top-level Commands
 - [ ] Rework to fit the README documentation

@@ -116,7 +116,7 @@ pub(crate) fn meta_repl() {
 
             // Configure and build
             Command::Animate { network } => {
-                let network_filename = network.display().to_owned();
+                let network_filename = network.display().to_string();
                 animate::animate_network(&network_filename)
             },
 

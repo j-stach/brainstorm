@@ -1,24 +1,48 @@
 
-mod setup;
-mod repl;
+mod file;
+//mod repl;
+
+use clap::Parser;
+
+/// Run `$ brainstorm` to launch the control REPL.
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+
+    /// Run with this flag to set up the necessary directories.
+    #[arg(long, short, action)]
+    setup: bool,
+
+    /// Add this to --setup to immediately launch brainstorm. Unnecessary otherwise.
+    #[arg(long, short, action)]
+    run: bool,
+}
 
 fn main() {
 
-    // TODO Using clap, check if there is a `--setup` flag
-    // Also provide for `--version` and `--help` flags
-    // And a `--run` flag that opens Brainstorm to print result & use immediate
+    let args = Args::parse();
 
-    // TODO Instead of setting up automatically, check that it exists--
-    // if not, prompt the user to re-run `brainstorm --setup` first
-    /*
-    // Set up the directory structure:
-    if let Err(e) = setup::directory_setup() {
-        println!("Error creating framework directory: {}", e);
-        return
+    if args.setup == true {
+
+        // Set up the directory structure:
+        if let Err(e) = file::setup::directory_setup() {
+            println!("Error creating framework directory: {}", e);
+            return
+        }
+
+        println!("Cajal setup complete");
+
+        if args.run != true { return }
     }
-    */
 
-    // Run the loop:
-    repl::run();
+    if file::setup::setup_ok() {
+        // TBD: Use config values to set up.
+        
+        // Run the loop:
+        //repl::run();
+    } else {
+        println!("Missing `.cajal` directories. Run `$ brainstorm --setup`.");
+    }
+
 }
 
