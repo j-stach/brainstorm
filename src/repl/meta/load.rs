@@ -1,53 +1,38 @@
 
-use crate::helpers::animus_is_active;
-use crate::error::SetupError;
+//! Handles loading the animi and launching their executables
 
 // Load and activate an existing but inactive animus.
-pub(super) fn load_animus(animus_name: &str) {
+pub(super) fn load_animus(animus_name: &str) -> anyhow::Result<()> {
 
-    if animus_exists(&animus_name) {
-        match animus_is_active(&animus_name) {
+    if crate::file::animi::animus_exists(animus_name)? {
 
-            Ok(active) => {
-                if !active {
-                    match launch_animus(&animus_name) {
-
-                        Ok(_) => {
-                            println!("Animus '{}' is loaded!", &animus_name)
-                        },
-
-                        Err(e) => {
-                            println!("An error occurred during launch.");
-                            eprintln!("{}", e);
-                        }
-                    }
-                } else { 
-                    println!("Animus '{}' is already active!", &animus_name)
-                }
-            },
-
-            Err(e) => {
-                println!("Failed to connect to animus host IP address.");
-                eprintln!("{}", e);
-            }
+        if !crate::repl::animus::is_active(animus_name)? {
+            launch_animus(animus_name)?;
+            println!("Animus '{}' has loaded", animus_name)
+        } else {
+            println!("An animus named '{}' is already running", animus_name)
         }
+
     } else {
-        println!("Animus '{}' not found! Use `list-all`", &animus_name)
+        println!("'{}' not found! Use `animate` to generate it", animus_name)
     }
+
+    Ok(())
 }
 
 // Execute the animusd service for an animus.
-fn launch_animus(animus_name: &str) -> Result<(), SetupError> {
+fn launch_animus(animus_name: &str) -> anyhow::Result<()> {
 
-    let animus_dir = animus_dir(&animus_name);
-    let bin_path = format!("{}/bin/animusd-{}", &animus_dir, &animus_name);
+    let animus_dir = crate::file::animi::animus_dir(animus_name);
+    let bin_path = format!("{}/bin/animusd-{}", animus_dir, animus_name);
     
-    // The binary should have been made executable when it was set up above.
+    // The binary should have been made executable when it was set up.
     let mut cmd = std::process::Command::new(bin_path);
 
     let result = cmd.output()?;
     if !result.status.success() {
-        return Err(SetupError::ExecutionFailed("animusd".to_string()))
+        // TODO Print error?
+        // TBD Returns on execeution or completion?
     }
 
     Ok(())

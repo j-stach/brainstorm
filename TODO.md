@@ -8,16 +8,8 @@
 ----
 
 # TODO for crate
-- Setup & config for brainstorm
 - Init & run meta repl
 - Animus commands send & responses recv
-
-## Exec & flags
-- [x] Launch clap from main.rs
-- [x] `--setup` flag to create or repair the framework directory
-- [x] `--version` flag to get the version of `brainstorm`
-- [x] `--run` flag to run after applying flags
-
 
 
 ----

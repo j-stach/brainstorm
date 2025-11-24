@@ -6,7 +6,7 @@ use clap::{ Parser, Subcommand };
 use clap_repl::{ ClapEditor, ReadCommandOutput };
 use clap_repl::reedline::{ DefaultPrompt, DefaultPromptSegment };
 
-use animusd_lib::protocol::Action::*;
+use animusd_lib::protocol::{ Command, Action, Response, Outcome };
 
 
 #[derive(Parser)]
@@ -68,6 +68,7 @@ pub(super) fn command_repl(animus_name: &str) {
         .build();
 
     // Execute commands:
+    /*
     loop {
 
         match inner_repl.read_command() {
@@ -159,6 +160,7 @@ pub(super) fn command_repl(animus_name: &str) {
         // Don't hog CPU!
         std::thread::yield_now();
     }
+*/
 
 }
 
@@ -167,19 +169,23 @@ pub(super) fn command_repl(animus_name: &str) {
 // Returns an error if the network connection could not be established.
 fn send_command(
     animus_name: &str, 
-    action: AnimusAction 
-) -> Result<Option<String>, CommandError> {
+    action: Action 
+) -> anyhow::Result<Option<Response>> {
 
+    /*
     // Create socket to connect to the animus's host device
     let ip_addr = read_animus_config(animus_name, "ip")?
         .parse::<IpAddr>()?;
 
     // TODO Authentication via `brainstorm.cfg`
 
-    let command = AnimusCommand::new(animus_name, action);
+    let command = Command::new(animus_name, action);
     command.send_command(ip_addr)
+    */
+    todo![]
 }
 
+/*
 // Unpack the response received by send_animus_command and print it.
 fn handle_response(
     animus_name: &str, 
@@ -203,17 +209,23 @@ fn report_command_error(e: CommandError) {
     println!("WARN: An error occurred: Command was not sent properly.");
     eprintln!("{}", e);
 }
+*/
 
 // Check if an animus is currently active by pinging for its version number.
-pub(crate) fn is_active(animus_name: &str) -> Result<bool, CommandError> {
+pub(crate) fn is_active(animus_name: &str) -> anyhow::Result<bool> {
 
-    if !valid_animus_name(animus_name) {
-        return Err(CommandError::BadCommandSyntax(animus_name.to_string()))
+    if !crate::file::animi::valid_animus_name(animus_name) {
+        // TODO
     }
 
+    // TODO Send query message
+
+    /*
     match send_animus_command(animus_name, AnimusAction::Version)? {
         Some(_) => Ok(true),
         None => Ok(false),
     }
+    */
+    Ok(true)
 }
 

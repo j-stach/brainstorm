@@ -3,9 +3,9 @@ use crate::helpers::*;
 use crate::error::SetupError;
 
 // Create a new animus setup for the given network.
-pub(super) fn animate_network(network_filename: &str) {
+pub(super) fn animate_network(network_filename: &str) -> anyhow::Result<()> {
 
-    if network_exists(&network_filename) {
+    if network_exists(&network_filename)? {
         match animus_setup(&network_filename) {
 
             Ok(animus_name) => {

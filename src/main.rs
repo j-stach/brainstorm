@@ -1,8 +1,9 @@
 
 mod file;
-//mod repl;
+mod repl;
 
 use clap::Parser;
+use ezcfg::Config;
 
 /// Run `$ brainstorm` to launch the control REPL.
 #[derive(Parser, Debug)]
@@ -32,14 +33,18 @@ fn main() {
 
         println!("Cajal setup complete");
 
-        if args.run != true { return }
+        if args.run == false { return }
     }
 
     if file::setup::setup_ok() {
-        // TBD: Use config values to set up.
-        
-        // Run the loop:
-        //repl::run();
+
+        let config = match file::cfg::BrainstormConfig::read() {
+            Ok(config) => config,
+            Err(_) => file::cfg::BrainstormConfig::default(),
+        };
+
+        repl::run(config)
+
     } else {
         println!("Missing `.cajal` directories. Run `$ brainstorm --setup`.");
     }

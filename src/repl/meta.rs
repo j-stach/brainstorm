@@ -1,6 +1,6 @@
 
 mod list;
-mod animate;
+//mod animate;
 mod load;
 
 use clap::{ Parser, Subcommand };
@@ -74,7 +74,7 @@ enum Command {
 
 
 // Launch the top-level REPL and process commands.
-pub(crate) fn meta_repl() {
+pub(crate) fn meta_repl(_config: crate::file::cfg::BrainstormConfig) {
 
     println!("Welcome to Brainstorm! For usage information, enter 'help'");
 
@@ -100,29 +100,38 @@ pub(crate) fn meta_repl() {
 
             // List all animi that are listening for commands
             Command::ListActive => {
-                // TODO Need a ways to query all animi at 4048
-                list::active_animi()
+                if let Err(e) = list::active_animi() {
+                    handle_command_error("list-active", e)
+                }
             },
 
             // List all animi saved in ~/.cajal/animi 
             Command::ListAll => {
-                list::all_animi()
+                if let Err(e) = list::all_animi() {
+                    handle_command_error("list-all", e)
+                }
             },
 
             // List all networks saved in ~/.cajal/saved
             Command::ListNetworks => {
-                list::saved_networks()
+                if let Err(e) = list::saved_networks() {
+                    handle_command_error("list-networks", e)
+                }
             },
 
             // Configure and build
             Command::Animate { network } => {
-                let network_filename = network.display().to_string();
-                animate::animate_network(&network_filename)
+                //let network_filename = network.display().to_string();
+                //if let Err(e) = animate::animate_network(&network_filename) {
+                //    handle_command_error("animate", e)
+                //}
             },
 
             // Launch an animus so it can begin receiving commands
             Command::Load { animus } => {
-                load::load_animus(&animus)
+                if let Err(e) = load::load_animus(&animus) {
+                    handle_command_error("load", e)
+                }
             },
 
             // Select an active (loaded) animus to issue commands
@@ -139,7 +148,7 @@ pub(crate) fn meta_repl() {
 
                 // TODO Query animus
 
-                super::animus::command_repl(&animus)
+                //super::animus::command_repl(&animus)
             },
 
         }
@@ -147,4 +156,9 @@ pub(crate) fn meta_repl() {
 
 }
 
+fn handle_command_error(cmd: &str, e: anyhow::Error) {
+    
+    println!("WARN: An error occurred while executing '{}' command", cmd);
+    eprintln!("{}", e);
+}
 
