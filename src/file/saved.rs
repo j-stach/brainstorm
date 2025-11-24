@@ -17,3 +17,8 @@ pub(crate) fn network_exists(network_name: &str) -> anyhow::Result<bool> {
     Ok(exists)
 }
 
+// Create a string representing the path to an animus's dedicated directory.
+pub(crate) fn network_path(network_name: &str) -> String {
+    format!("~/.cajal/saved/{}.nn", network_name)
+}
+

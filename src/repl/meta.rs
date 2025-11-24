@@ -1,6 +1,6 @@
 
 mod list;
-//mod animate;
+mod animate;
 mod load;
 
 use clap::{ Parser, Subcommand };
@@ -121,10 +121,10 @@ pub(crate) fn meta_repl(_config: crate::file::cfg::BrainstormConfig) {
 
             // Configure and build
             Command::Animate { network } => {
-                //let network_filename = network.display().to_string();
-                //if let Err(e) = animate::animate_network(&network_filename) {
-                //    handle_command_error("animate", e)
-                //}
+                let network_filename = network.display().to_string();
+                if let Err(e) = animate::animate_network(&network_filename) {
+                    handle_command_error("animate", e)
+                }
             },
 
             // Launch an animus so it can begin receiving commands
@@ -137,16 +137,25 @@ pub(crate) fn meta_repl(_config: crate::file::cfg::BrainstormConfig) {
             // Select an active (loaded) animus to issue commands
             Command::Select { animus } => {
 
-                // TODO Needs to be able to send commands to animi that 
-                // "don't exist", in case records were accidentally deleted.
-                // The current helper only checks if the directory is present.
-                /*
-                if !animus_exists(&animus) {
-                    println!("Animus '{}' not found! Use `list-all`", &animus)
-                }
-                */
+                let is_active = crate::repl::animus::is_active(&animus);
 
-                // TODO Query animus
+                if let Err(e) = is_active {
+                    return handle_command_error("select", e)
+                } else if !is_active.expect("Checked above") {
+
+                    return handle_command_error(
+                        "select", 
+                        anyhow::anyhow!("Animus '{}' is not active", &animus)
+                    )
+                }
+                
+                let exists = crate::file::animi::animus_exists(&animus);
+
+                if let Err(e) = exists {
+                    return handle_command_error("select", e)
+                } else if !exists.expect("Checked above") {
+                    println!("WARN: '{}' is active but unregistered", &animus)
+                }
 
                 //super::animus::command_repl(&animus)
             },
