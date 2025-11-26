@@ -12,6 +12,8 @@ use clap_repl::{
     },
 };
 
+use crate::file;
+
 
 #[derive(Parser)]
 #[command(
@@ -21,12 +23,12 @@ use clap_repl::{
 )]
 struct Cli {
     #[command(subcommand)]
-    command: Command,
+    command: MetaCommand,
 }
 
 
 #[derive(Subcommand, Debug)]
-enum Command {
+enum MetaCommand {
 
     /// Create a new Animus for the network provided, then activate it.
     Animate {
@@ -72,102 +74,105 @@ enum Command {
     Quit, Exit,
 }
 
+impl crate::Brainstorm {
 
-// Launch the top-level REPL and process commands.
-pub(crate) fn meta_repl(_config: crate::file::cfg::BrainstormConfig) {
+    // Launch the top-level REPL and process commands.
+    pub(crate) fn meta_repl(&self) {
 
-    println!("Welcome to Brainstorm! For usage information, enter 'help'");
+        println!("Welcome to Brainstorm! For usage information, enter 'help'");
 
-    // Set the prompt appearance
-    let prompt = DefaultPrompt {
-        left_prompt: DefaultPromptSegment::Basic("brainstorm".to_owned()),
-        ..DefaultPrompt::default()
-    };
+        // Set the prompt appearance
+        let prompt = DefaultPrompt {
+            left_prompt: DefaultPromptSegment::Basic("brainstorm".to_owned()),
+            ..DefaultPrompt::default()
+        };
 
-    let repl = ClapEditor::<Cli>::builder()
-        .with_prompt(Box::new(prompt))
-        .build();
+        let repl = ClapEditor::<Cli>::builder()
+            .with_prompt(Box::new(prompt))
+            .build();
 
-    // Execute commands:
-    repl.repl(|cli: Cli| {
-        match cli.command {
+        // Execute commands:
+        repl.repl(|cli: Cli| {
+            match cli.command {
 
-            // Exit Brainstorm
-            Command::Quit | Command::Exit => {
-                println!("Goodbye!");
-                std::process::exit(0);
-            },
+                // Exit Brainstorm
+                MetaCommand::Quit | MetaCommand::Exit => {
+                    println!("Goodbye!");
+                    std::process::exit(0);
+                },
 
-            // List all animi that are listening for commands
-            Command::ListActive => {
-                if let Err(e) = list::active_animi() {
-                    handle_command_error("list-active", e)
-                }
-            },
+                // List all animi that are listening for commands
+                MetaCommand::ListActive => {
+                    if let Err(e) = list::active_animi() {
+                        Self::handle_command_error("list-active", e)
+                    }
+                },
 
-            // List all animi saved in ~/.cajal/animi 
-            Command::ListAll => {
-                if let Err(e) = list::all_animi() {
-                    handle_command_error("list-all", e)
-                }
-            },
+                // List all animi saved in ~/.cajal/animi 
+                MetaCommand::ListAll => {
+                    if let Err(e) = list::all_animi() {
+                        Self::handle_command_error("list-all", e)
+                    }
+                },
 
-            // List all networks saved in ~/.cajal/saved
-            Command::ListNetworks => {
-                if let Err(e) = list::saved_networks() {
-                    handle_command_error("list-networks", e)
-                }
-            },
+                // List all networks saved in ~/.cajal/saved
+                MetaCommand::ListNetworks => {
+                    if let Err(e) = list::saved_networks() {
+                        Self::handle_command_error("list-networks", e)
+                    }
+                },
 
-            // Configure and build
-            Command::Animate { network } => {
-                let network_filename = network.display().to_string();
-                if let Err(e) = animate::animate_network(&network_filename) {
-                    handle_command_error("animate", e)
-                }
-            },
+                // Configure and build
+                MetaCommand::Animate { network } => {
+                    let network_filename = network.display().to_string();
+                    if let Err(e) = self.animate_network(&network_filename) {
+                            Self::handle_command_error("animate", e)
+                        }
+                },
 
-            // Launch an animus so it can begin receiving commands
-            Command::Load { animus } => {
-                if let Err(e) = load::load_animus(&animus) {
-                    handle_command_error("load", e)
-                }
-            },
+                // Launch an animus so it can begin receiving commands
+                MetaCommand::Load { animus } => {
+                    if let Err(e) = self.load_animus(&animus) {
+                        Self::handle_command_error("load", e)
+                    }
+                },
 
-            // Select an active (loaded) animus to issue commands
-            Command::Select { animus } => {
+                // Select an active (loaded) animus to issue commands
+                MetaCommand::Select { animus } => {
 
-                let is_active = crate::repl::animus::is_active(&animus);
+                    let is_active = self.is_active(&animus);
 
-                if let Err(e) = is_active {
-                    return handle_command_error("select", e)
-                } else if !is_active.expect("Checked above") {
+                    if let Err(e) = is_active {
+                        return Self::handle_command_error("select", e)
+                    } else if !is_active.expect("Checked above") {
 
-                    return handle_command_error(
-                        "select", 
-                        anyhow::anyhow!("Animus '{}' is not active", &animus)
-                    )
-                }
-                
-                let exists = crate::file::animi::animus_exists(&animus);
+                        return Self::handle_command_error(
+                            "select", 
+                            anyhow::anyhow!("'{}' is not active", &animus)
+                        )
+                    }
+                    
+                    let exists = file::animi::animus_exists(&animus);
 
-                if let Err(e) = exists {
-                    return handle_command_error("select", e)
-                } else if !exists.expect("Checked above") {
-                    println!("WARN: '{}' is active but unregistered", &animus)
-                }
+                    if let Err(e) = exists {
+                        return Self::handle_command_error("select", e)
+                    } else if !exists.expect("Checked above") {
+                        println!("WARN: '{}' is unregistered", &animus)
+                    }
 
-                //super::animus::command_repl(&animus)
-            },
+                    self.command_repl(&animus)
+                },
 
-        }
-    });
+            }
+        });
 
-}
+    }
 
-fn handle_command_error(cmd: &str, e: anyhow::Error) {
-    
-    println!("WARN: An error occurred while executing '{}' command", cmd);
-    eprintln!("{}", e);
+    // Handle errors
+    fn handle_command_error(cmd: &str, e: anyhow::Error) {
+        
+        println!("WARN: An error occurred while executing '{}' command", cmd);
+        eprintln!("{}", e);
+    }
 }
 

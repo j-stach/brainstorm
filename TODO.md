@@ -24,7 +24,7 @@ Ensure current with `animusd`:
 - [ ] build/install
 - [ ] pre-configuration
 - [ ] commands & responses TCP->UDP
-
+- [ ] Send comands to multiple animi
 
 
 ## Top-level Commands
@@ -49,4 +49,8 @@ Ensure current with `animusd`:
 ## Distributed services
 - Need a way to centrally control the activation & interconnection of animi
 - Authentication handled by Brainstorm is fine for now
+
+## Logging
+- Reintegrate Mindreader to animusd
+- Configure & interact with mindreader through sub-repl
 

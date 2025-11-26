@@ -5,6 +5,20 @@ mod repl;
 use clap::Parser;
 use ezcfg::Config;
 
+// Singleton handling global program resources
+pub(crate) struct Brainstorm {
+    socket: std::net::UdpSocket,
+} 
+
+impl Brainstorm {
+    fn new(_config: file::cfg::BrainstormConfig) -> anyhow::Result<Self> {
+
+        Ok(Brainstorm {
+            socket: std::net::UdpSocket::bind("127.0.0.1:4048")?,
+        })
+    }
+}
+
 /// Run `$ brainstorm` to launch the control REPL.
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -14,7 +28,8 @@ struct Args {
     #[arg(long, short, action)]
     setup: bool,
 
-    /// Add this to --setup to immediately launch brainstorm. Unnecessary otherwise.
+    /// Add this to --setup to immediately launch brainstorm. 
+    /// Unnecessary otherwise.
     #[arg(long, short, action)]
     run: bool,
 }
@@ -43,7 +58,10 @@ fn main() {
             Err(_) => file::cfg::BrainstormConfig::default(),
         };
 
-        repl::run(config)
+        match Brainstorm::new(config) {
+            Ok(brainstorm) => brainstorm.meta_repl(),
+            Err(e) => eprintln!("{}", e),
+        }
 
     } else {
         println!("Missing `.cajal` directories. Run `$ brainstorm --setup`.");
