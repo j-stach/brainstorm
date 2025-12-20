@@ -1,11 +1,15 @@
 
 //! This aligns Brainstorm with the capabilities of the `animusd` protocol.
 
+mod command;
+mod report;
+
+
 use clap::{ Parser, Subcommand };
 use clap_repl::{ ClapEditor, ReadCommandOutput };
 use clap_repl::reedline::{ DefaultPrompt, DefaultPromptSegment };
 
-use animusd_lib::protocol::{ Command, Action, Response, Outcome };
+use animusd_lib::protocol::Action;
 
 
 #[derive(Parser)]
@@ -53,13 +57,13 @@ enum AnimusCommand {
 impl crate::Brainstorm {
 
     // Spawns an inner REPL for sending animus commands.
-    pub(super) fn command_repl(&self, animus_name: &str) {
+    pub(super) fn animus_repl(&self, animus: &str) {
 
-        println!("Selected animus '{}'", animus_name);
+        println!("Selected animus '{}'", animus);
 
         // Set the prompt appearance
         let prompt = DefaultPrompt {
-            left_prompt: DefaultPromptSegment::Basic(animus_name.to_owned()),
+            left_prompt: DefaultPromptSegment::Basic(animus.to_owned()),
             ..DefaultPrompt::default()
         };
 
@@ -67,159 +71,79 @@ impl crate::Brainstorm {
             .with_prompt(Box::new(prompt))
             .build();
 
+        // TODO Start independent loop to listen for reports
+
         // Execute commands:
-        loop {
+        loop { match inner_repl.read_command() {
+            ReadCommandOutput::Command(cli) => match cli.command {
+                
+                AnimusCommand::Back => { break },
 
-            match inner_repl.read_command() {
-                ReadCommandOutput::Command(cli) => match cli.command {
-                    
-                    AnimusCommand::Back => { break },
-
-                    AnimusCommand::Name => {
-                        self.command_animus(animus_name, Action::Name)
-                    },
-
-                    AnimusCommand::Version => {
-                        self.command_animus(animus_name, Action::Version)
-                    },
-
-                    // Print the list of structures in the complex
-                    AnimusCommand::ListStructures => {
-
-                        let response = self.send_command(
-                            animus_name, 
-                            Action::ListStructures,
-                        );
-
-                        match response {
-
-                            Ok(r) => {
-                                // TODO
-                                /*
-                                if let Some(csv) = response.unwrap() {
-                                    // Structures will be listed as CSV string,
-                                    // Needs to be split and listed vertically.
-                                    let values: Vec<_> = csv.split(",")
-                                        .collect();
-                                    for value in values {
-                                        println!("{}", value);
-                                    }
-                                } else {
-                                    println!(
-                                        "No response from animus {}", 
-                                        animus_name
-                                    );
-                                }
-                                */
-                            },
-
-                            Err(e) => Self::report_command_error(animus_name, e)
-                        }
-
-                    },
-
-                    AnimusCommand::Save => {
-                        println!("Saving network state...");
-                        self.command_animus(animus_name, Action::Save)
-                    },
-
-                    AnimusCommand::Wake => {
-                        self.command_animus(animus_name, Action::Wake)
-                    },
-
-                    AnimusCommand::Sleep => {
-                        self.command_animus(animus_name, Action::Sleep)
-                    },
-                    
-                    AnimusCommand::Status => {
-                        self.command_animus(animus_name, Action::Status)
-                    },
-
-                    AnimusCommand::Terminate => {
-                        self.command_animus(animus_name, Action::Terminate)
-                    },
+                AnimusCommand::Name => {
+                    if let Err(e) = self.send_command(animus, Action::Name) {
+                        Self::animus_command_error(animus, e)
+                    }
                 },
 
-                ReadCommandOutput::EmptyLine => {/* Continue */},
-                ReadCommandOutput::ClapError(e) => { println!{"{}", e}},
-                ReadCommandOutput::ReedlineError(e) => { println!{"{}", e}},
-                ReadCommandOutput::ShlexError => { println!{"Bad syntax"}},
+                AnimusCommand::Version => {
+                    if let Err(e) = self.send_command(animus, Action::Version) {
+                        Self::animus_command_error(animus, e)
+                    }
+                },
 
-                _ => {/* Continue */}
+                AnimusCommand::ListStructures => {
+                    
+                    if let Err(e) = self.send_command(
+                        animus, 
+                        Action::ListStructures,
+                    ) {
+                        Self::animus_command_error(animus, e)
+                    }
+                },
 
-            }
+                AnimusCommand::Save => {
+                    println!("Saving network state...");
+                    if let Err(e) = self.send_command(animus, Action::Save) {
+                        Self::animus_command_error(animus, e)
+                    }
+                },
 
-            // Don't hog CPU!
-            // TODO TBD Necessary?
-            //std::thread::yield_now();
-        }
+                AnimusCommand::Wake => {
+                    if let Err(e) = self.send_command(animus, Action::Wake) {
+                        Self::animus_command_error(animus, e)
+                    }
+                },
 
-    }
+                AnimusCommand::Sleep => {
+                    if let Err(e) = self.send_command(animus, Action::Sleep) {
+                        Self::animus_command_error(animus, e)
+                    }
+                },
 
-    // Check if an animus is currently active by pinging for its version number.
-    pub(crate) fn is_active(&self, animus_name: &str) -> anyhow::Result<bool> {
+                AnimusCommand::Status => {
+                    if let Err(e) = self.send_command(animus, Action::Status) {
+                        Self::animus_command_error(animus, e)
+                    }
+                },
 
-        if !crate::file::animi::valid_animus_name(animus_name) {
-            // TODO Err
-        }
+                AnimusCommand::Terminate => {
+                    if let Err(e) = self.send_command(
+                        animus, 
+                        Action::Terminate
+                    ) {
+                        Self::animus_command_error(animus, e)
+                    }
+                },
+            },
 
-        let response = self.send_command(animus_name, Action::Query)?;
+            ReadCommandOutput::EmptyLine => {/* Continue */},
+            ReadCommandOutput::ClapError(e) => { println!{"{}", e}},
+            ReadCommandOutput::ReedlineError(e) => { println!{"{}", e}},
+            ReadCommandOutput::ShlexError => { println!{"Bad syntax"}},
 
-        match response {
-            Some(_) => Ok(true),
-            None => Ok(false),
-        }
-    }
+            _ => {/* Continue */}
 
-    // Send an animus action as a command, then process the response.
-    fn command_animus(&self, animus_name: &str, action: Action) {
-        
-        let response = self.send_command(animus_name, action);
-        match response {
-            Ok(r) => Self::report_response(animus_name, r),
-            Err(e) => Self::report_command_error(animus_name, e)
-        }
-    }
-
-    // Send command to associated IP address @ port 4048.
-    // Get any animus response and parse results to string.
-    // Returns an error if the network connection could not be established.
-    fn send_command(
-        &self,
-        animus_name: &str, 
-        action: Action 
-    ) -> anyhow::Result<Option<Response>> {
-
-        let command = Command::new(animus_name, action);
-        self.socket.send(&command.encode()?)?;
-
-        let mut buf = [0; 256]; // TODO TBD Big enough?
-        if let Ok((len, src)) = self.socket.recv_from(&mut buf) {
-            let response = Response::decode(&buf)?;
-            Ok(Some(response))
-        } else {
-            Ok(None)
-        }
-
-    }
-
-    // Unpack the response received by send_animus_command and print it.
-    fn report_response(animus_name: &str, response: Option<Response>) {
-
-        if let Some(response) = response {
-            //response.name
-            // TODO println!("{}", value);
-            // animus, action, outcome
-        } else {
-            println!("No response from animus '{}'", animus_name);
-        }
-    }
-
-    // Log and display an error that occurred while sending an animus command.
-    fn report_command_error(animus_name: &str, e: anyhow::Error) {
-
-        println!("WARN: An error occurred: Command was not sent properly.");
-        eprintln!("{}", e);
+        }}
     }
 }
 

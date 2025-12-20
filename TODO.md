@@ -11,6 +11,8 @@
 - Init & run meta repl
 - Animus commands send & responses recv
 
+- [ ] animusd-lib `Report` passive loop
+
 
 ----
 

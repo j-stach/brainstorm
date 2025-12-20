@@ -42,7 +42,7 @@ brainstorm
 These commands are used to interact with network files and animi at the top level.
 | Command | Purpose |
 |---------|---------|
-|`animate network=my_network`| Generate a new animus for `my_network.nn` |
+|`animate network=my_network`| Configure a new animus for `my_network.nn` |
 |`load animus=my_network`| Launch (activate) the animus named `my_network` |
 |`select animus=my_network`| Enter an animus-specific REPL for `my_network` to issue commands |
 |`list-networks`| List all `.nn` files in `~/.cajal/saved/` |

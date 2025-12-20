@@ -12,8 +12,8 @@ readme = "README.md"
 [dependencies]
 clap = "4.5.36"
 clap-repl = "0.3.2"
-anyhow = "1.0.98" # phase out
+anyhow = "1.0.98" 
 ezcfg = "0.1.0"
-animusd = { path = "/home/jordan/projs/animusd" }
+animusd-lib = { path = "/home/jordan/projs/cajal-framework/animusd-lib" }
 
 

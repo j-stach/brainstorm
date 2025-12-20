@@ -19,7 +19,6 @@ use crate::file;
 #[command(
     name = "brainstorm",
     about = "REPL for managing Animus services and networks",
-    // TODO long-about = "",
 )]
 struct Cli {
     #[command(subcommand)]
@@ -60,6 +59,9 @@ enum MetaCommand {
         )]
         animus: String
     },
+
+    // TODO: Report loop to continuously read reports from animi
+    // TODO: Make note that overuse of Report may interfere with is_active
 
     /// List all Animi that are currently active on this device.
     ListActive,
@@ -104,21 +106,21 @@ impl crate::Brainstorm {
                 // List all animi that are listening for commands
                 MetaCommand::ListActive => {
                     if let Err(e) = list::active_animi() {
-                        Self::handle_command_error("list-active", e)
+                        Self::meta_command_error("list-active", e)
                     }
                 },
 
                 // List all animi saved in ~/.cajal/animi 
                 MetaCommand::ListAll => {
                     if let Err(e) = list::all_animi() {
-                        Self::handle_command_error("list-all", e)
+                        Self::meta_command_error("list-all", e)
                     }
                 },
 
                 // List all networks saved in ~/.cajal/saved
                 MetaCommand::ListNetworks => {
                     if let Err(e) = list::saved_networks() {
-                        Self::handle_command_error("list-networks", e)
+                        Self::meta_command_error("list-networks", e)
                     }
                 },
 
@@ -126,14 +128,14 @@ impl crate::Brainstorm {
                 MetaCommand::Animate { network } => {
                     let network_filename = network.display().to_string();
                     if let Err(e) = self.animate_network(&network_filename) {
-                            Self::handle_command_error("animate", e)
-                        }
+                        Self::meta_command_error("animate", e)
+                    }
                 },
 
                 // Launch an animus so it can begin receiving commands
                 MetaCommand::Load { animus } => {
                     if let Err(e) = self.load_animus(&animus) {
-                        Self::handle_command_error("load", e)
+                        Self::meta_command_error("load", e)
                     }
                 },
 
@@ -143,10 +145,10 @@ impl crate::Brainstorm {
                     let is_active = self.is_active(&animus);
 
                     if let Err(e) = is_active {
-                        return Self::handle_command_error("select", e)
+                        return Self::meta_command_error("select", e)
                     } else if !is_active.expect("Checked above") {
 
-                        return Self::handle_command_error(
+                        return Self::meta_command_error(
                             "select", 
                             anyhow::anyhow!("'{}' is not active", &animus)
                         )
@@ -155,12 +157,12 @@ impl crate::Brainstorm {
                     let exists = file::animi::animus_exists(&animus);
 
                     if let Err(e) = exists {
-                        return Self::handle_command_error("select", e)
+                        return Self::meta_command_error("select", e)
                     } else if !exists.expect("Checked above") {
                         println!("WARN: '{}' is unregistered", &animus)
                     }
 
-                    self.command_repl(&animus)
+                    self.animus_repl(&animus)
                 },
 
             }
@@ -169,7 +171,7 @@ impl crate::Brainstorm {
     }
 
     // Handle errors
-    fn handle_command_error(cmd: &str, e: anyhow::Error) {
+    fn meta_command_error(cmd: &str, e: anyhow::Error) {
         
         println!("WARN: An error occurred while executing '{}' command", cmd);
         eprintln!("{}", e);

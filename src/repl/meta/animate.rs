@@ -41,7 +41,7 @@ impl crate::Brainstorm {
         let animus_name = self.rename_animus(network_name.to_string())?;
 
         if animus_name.is_none() {
-            //return Ok(None)
+            // TODO return Ok(None)
         }
 
         // Safe because we check for it above
@@ -76,7 +76,7 @@ impl crate::Brainstorm {
         }
 
         if self.is_active(&name)? {
-            println!("Animus '{}' is already active!", &name);
+            println!("An animus named '{}' is already active!", &name);
             required = true
         } 
 
