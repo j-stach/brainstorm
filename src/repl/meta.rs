@@ -60,9 +60,6 @@ enum MetaCommand {
         animus: String
     },
 
-    // TODO: Report loop to continuously read reports from animi
-    // TODO: Make note that overuse of Report may interfere with is_active
-
     /// List all Animi that are currently active on this device.
     ListActive,
 
@@ -92,6 +89,9 @@ impl crate::Brainstorm {
         let repl = ClapEditor::<Cli>::builder()
             .with_prompt(Box::new(prompt))
             .build();
+
+        // TODO: Silent logging for animus Reports, which in the future 
+        // may be sent independently from commands.
 
         // Execute commands:
         repl.repl(|cli: Cli| {

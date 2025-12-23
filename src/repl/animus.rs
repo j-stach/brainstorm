@@ -71,8 +71,6 @@ impl crate::Brainstorm {
             .with_prompt(Box::new(prompt))
             .build();
 
-        // TODO Start independent loop to listen for reports
-
         // Execute commands:
         loop { match inner_repl.read_command() {
             ReadCommandOutput::Command(cli) => match cli.command {
@@ -80,59 +78,36 @@ impl crate::Brainstorm {
                 AnimusCommand::Back => { break },
 
                 AnimusCommand::Name => {
-                    if let Err(e) = self.send_command(animus, Action::Name) {
-                        Self::animus_command_error(animus, e)
-                    }
+                    self.handle_command(animus, Action::Name)
                 },
 
                 AnimusCommand::Version => {
-                    if let Err(e) = self.send_command(animus, Action::Version) {
-                        Self::animus_command_error(animus, e)
-                    }
+                    self.handle_command(animus, Action::Version)
                 },
 
                 AnimusCommand::ListStructures => {
-                    
-                    if let Err(e) = self.send_command(
-                        animus, 
-                        Action::ListStructures,
-                    ) {
-                        Self::animus_command_error(animus, e)
-                    }
+                    self.handle_command(animus, Action::ListStructures)
                 },
 
                 AnimusCommand::Save => {
-                    println!("Saving network state...");
-                    if let Err(e) = self.send_command(animus, Action::Save) {
-                        Self::animus_command_error(animus, e)
-                    }
+                    println!("Saving network state, please wait...");
+                    self.handle_command(animus, Action::Save)
                 },
 
                 AnimusCommand::Wake => {
-                    if let Err(e) = self.send_command(animus, Action::Wake) {
-                        Self::animus_command_error(animus, e)
-                    }
+                    self.handle_command(animus, Action::Wake)
                 },
 
                 AnimusCommand::Sleep => {
-                    if let Err(e) = self.send_command(animus, Action::Sleep) {
-                        Self::animus_command_error(animus, e)
-                    }
+                    self.handle_command(animus, Action::Sleep)
                 },
 
                 AnimusCommand::Status => {
-                    if let Err(e) = self.send_command(animus, Action::Status) {
-                        Self::animus_command_error(animus, e)
-                    }
+                    self.handle_command(animus, Action::Status)
                 },
 
                 AnimusCommand::Terminate => {
-                    if let Err(e) = self.send_command(
-                        animus, 
-                        Action::Terminate
-                    ) {
-                        Self::animus_command_error(animus, e)
-                    }
+                    self.handle_command(animus, Action::Terminate)
                 },
             },
 
@@ -144,6 +119,17 @@ impl crate::Brainstorm {
             _ => {/* Continue */}
 
         }}
+    }
+
+    fn handle_command(&self, animus: &str, action: Action) {
+
+        if let Err(e) = self.send_command(animus, action) {
+            Self::animus_command_error(animus, e);
+        } else {
+            if let Err(e) = self.share_response() {
+                Self::animus_response_error(animus, action, e)
+            }
+        }
     }
 }
 
