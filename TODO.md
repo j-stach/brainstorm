@@ -1,5 +1,6 @@
 
-# TODO for framework
+# TODO for crate
+- [ ] Clean up & misc TODO items in src comments
 
 ## Misc
 - [ ] Add `Query` action back for explicit use in top-level repl
@@ -9,11 +10,11 @@
 - [ ] Animus had new actions added -- implement?
 
 ## Group
-- [ ] Command to group animi by name into a `Group` 
-- [ ] Group command repl loop (`select` for `system`)
-- [ ] Group command to auto-link and animi in system,
+- [x] Command to group animi by name into a `Group` 
+- [x] Group command repl loop (`select` for `system`)
+- [x] Group command to auto-link and animi in system,
 make sure to report tracts that are doubled, or unmatched, before linking
-- [ ] `group` directory in filesystem
+- [x] `group` directory in filesystem
 
 ## Remote animi
 - [ ] Divide `animi` directory with `local` and `remote` sub-dirs
