@@ -1,58 +1,44 @@
 
-# TODO for Cajal Framework
-- Update file expectations in Cajal's build process.
-- `ezcfg` to replace `toml` dependency
-- `cajal-protocol` to replace IO (tract) transmission
-- Options for tracts to perform batching
+# TODO for framework
+
+## Misc
+- [ ] Add `Query` action back for explicit use in top-level repl
+- [ ] Add `this-ip` command to meta repl to quickly get IP addr used
+
+## Animus
+- [ ] Animus had new actions added -- implement?
+
+## Group
+- [ ] Command to group animi by name into a `Group` 
+- [ ] Group command repl loop (`select` for `system`)
+- [ ] Group command to auto-link and animi in system,
+make sure to report tracts that are doubled, or unmatched, before linking
+- [ ] `group` directory in filesystem
+
+## Remote animi
+- [ ] Divide `animi` directory with `local` and `remote` sub-dirs
+- [ ] `add-remote` command with `ip_addr` and `animus` fields
+- [ ] `remove-remote` command to remove animi safely/with warnings
+- [ ] `add-remote` queries animus by name at port 4048 of the IP address (animi must be started locally)
+- [ ] `add-remote` records name and IP addr in file in `remote` dir
+- [ ] Sending IP commands to remote dirs
+- [ ] Link singular output by name, for motor ports and other manual alignment
 
 ----
 
-# TODO for crate
-- Init & run meta repl
-- Animus commands send & responses recv
+# Quality of life features
 
-- [ ] animusd-lib `Report` passive loop
-
-
-----
-
-## TODO for crate:
-- [ ] ERRORS redo & move away from `anyhow`
-
-## Animus Commands
-Ensure current with `animusd`:
-- [ ] Add notes about compatability 
-- (e.g., incompatible versions may partially interoperate) 
-- [ ] build/install
-- [ ] pre-configuration
-- [ ] commands & responses TCP->UDP
-- [ ] Send comands to multiple animi
-
-
-## Top-level Commands
-- [ ] Rework to fit the README documentation
-- [ ] `list-active` needs to ping 4048 for a report from all animi 
-(in case a directory was mistakenly deleted)
-(This will mean better coordination of simultaneous msgs from shared port)
-
-## Quality of life features
-- [ ] "Config" loops for Brainstorm and animi, using `ezcfg`
-- [ ] Allow rename even if the network name would be valid.
-- [ ] Warn about reconfiguring animus for an existing animus/network
-
-
-## Connection generation
-- [ ] Needs "modify" mode for working with SerialComplex before load
-(Load & modify Complex without immediately running it)
-- [ ] Input port conflict detection & resolution
-- [ ] Or else, a way to non-permanently assign ports for Inputs & Outputs,
-(so that it can be handled by Brainstorm during load)
+## Config REPL
+- "Config" loops for Brainstorm and animi, using `ezcfg`
+- Warn about reconfiguring animus for an existing animus/network
 
 ## Distributed services
 - Need a way to centrally control the activation & interconnection of animi
-- Authentication handled by Brainstorm is fine for now
 
 ## Logging
 - Reintegrate Mindreader to animusd
 - Configure & interact with mindreader through sub-repl
+
+## TUI
+TBD.
 

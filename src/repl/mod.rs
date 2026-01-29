@@ -5,3 +5,6 @@ mod meta;
 // Sub-REPL for managing an existing Animus instance.
 pub(self) mod animus;
 
+// Sub-REPL for managing a group of related Animi.
+pub(self) mod group;
+

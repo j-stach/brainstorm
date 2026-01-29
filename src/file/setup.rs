@@ -12,8 +12,9 @@ macro_rules! per_missing_dir {
         let animi = &root.join("animi");        // Animus records and run
         let saved = &root.join("saved");        // Serialized networks
         let brain = &root.join("brainstorm");   // Brainstorm configs
+        let groups = &brain.join("groups");     // Groups of animi
 
-        let directories = vec![root, animi, saved, brain];
+        let directories = vec![root, animi, saved, brain, groups];
 
         for dir in directories {
             if !dir.is_dir() {

@@ -60,6 +60,16 @@ enum MetaCommand {
         animus: String
     },
 
+    /// Select a group of animi to manage.
+    Group {
+        #[arg( help = 
+            "Provide the name of the group as it appears in the filesystem. \
+            To create a new group, enter the desired name,
+            then submit Y for the next prompt."
+        )]
+        name: String
+    },
+
     /// List all Animi that are currently active on this device.
     ListActive,
 
@@ -163,6 +173,11 @@ impl crate::Brainstorm {
                     }
 
                     self.animus_repl(&animus)
+                },
+
+                // Enter the sub-repl for managing a group
+                MetaCommand::Group { name } => {
+                    self.group_repl(&name)
                 },
 
             }

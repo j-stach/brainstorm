@@ -1,9 +1,8 @@
 
-use animusd_lib::protocol::{ Action, Report };
+use animusd_lib::protocol::Report;
 
 impl crate::Brainstorm {
 
-    #[allow(dead_code)]
     pub(crate) fn share_response(&self) -> anyhow::Result<()> {
         Ok(Self::print_report(self.read_report()?))
     }
@@ -25,21 +24,6 @@ impl crate::Brainstorm {
             report.action,
             report.outcome,
         }
-    }
-
-    // Log and display an error that occurred while awaiting an animus response.
-    pub(super) fn animus_response_error(
-        animus: &str, 
-        action: Action,
-        e: anyhow::Error
-    ) {
-
-        println!(
-            "ERROR: Socket timed out while waiting for response from '{}'...\n\
-            Command '{}' may not have executed properly.", 
-            animus, action
-        );
-        eprintln!("{}", e);
     }
 }
 
