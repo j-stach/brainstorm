@@ -1,20 +1,22 @@
 
 # TODO for crate
-- [ ] Clean up & misc TODO items in src comments
+- [ ] Misc `TODO` items in src comments
+- [ ] `await_response` method to return response instead of printing directly
+- [ ] Other helper functions
+- [ ] Errors cleaned up
 
-## Misc
-- [ ] Add `Query` action back for explicit use in top-level repl
-- [ ] Add `this-ip` command to meta repl to quickly get IP addr used
+## Connections
+- [ ] ~Brainstorm `Link` command to auto-connect tracts between individual (ungrouped) animi~
 
-## Animus
-- [ ] Animus had new actions added -- implement?
+## "Unchecked link (for Sensor & Motor)"
+- `Link` output and input to PhantomLimb `Sensor` and `Motor` without using 4048
+(4048 should be reserved for Brainstorm <-> Animus communication only)
 
-## Group
-- [x] Command to group animi by name into a `Group` 
-- [x] Group command repl loop (`select` for `system`)
-- [x] Group command to auto-link and animi in system,
-make sure to report tracts that are doubled, or unmatched, before linking
-- [x] `group` directory in filesystem
+Within the animus repl:
+- [x] For `Sensor`, Brainstorm should allow query for raw port address (without ReceiverInfo),
+and the application containing the sensor should permit manual entry of that address
+during connection.
+- [x] For `Motor`, Brainstorm should take in a raw port address and connect using that alone.
 
 ## Remote animi
 - [ ] Divide `animi` directory with `local` and `remote` sub-dirs
@@ -25,6 +27,9 @@ make sure to report tracts that are doubled, or unmatched, before linking
 - [ ] Sending IP commands to remote dirs
 - [ ] Link singular output by name, for motor ports and other manual alignment
 
+## Group
+- [ ] Break up `group.rs` with helper modules & functions
+
 ----
 
 # Quality of life features
@@ -33,9 +38,6 @@ make sure to report tracts that are doubled, or unmatched, before linking
 - "Config" loops for Brainstorm and animi, using `ezcfg`
 - Warn about reconfiguring animus for an existing animus/network
 
-## Distributed services
-- Need a way to centrally control the activation & interconnection of animi
-
 ## Logging
 - Reintegrate Mindreader to animusd
 - Configure & interact with mindreader through sub-repl
@@ -43,3 +45,7 @@ make sure to report tracts that are doubled, or unmatched, before linking
 ## TUI
 TBD.
 
+## Misc
+- Add `Query` action back for explicit use in top-level repl
+- Add `this-ip` command to meta repl to quickly get IP addr used
+- AutoLink tracts between animi without grouping

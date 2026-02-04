@@ -60,7 +60,7 @@ enum GroupCommand {
     /// Will fail if there are duplicate tract names, 
     /// and will report a warning if any tracts are not paired
     /// (e.g., left open for Sensor/Motor IO).
-    Link,
+    AutoLink,
 
     /// Return to the Brainstorm REPL.
     Back,
@@ -118,7 +118,7 @@ impl crate::Brainstorm {
                     self.group_action(group, Action::Query)
                 },
 
-                GroupCommand::Link => {
+                GroupCommand::AutoLink => {
                     self.group_attempt_autolink(group);
                 },
 
@@ -325,8 +325,7 @@ impl crate::Brainstorm {
         // Attempt to link using collected Inputs and Outputs
         for (tract_name, animus) in senders.clone().iter() {
             if let Some((_, info)) = receivers.get(tract_name) {
-                // TODO ConnectTract -> LinkOutput
-                let action = Action::ConnectTract(info.clone());
+                let action = Action::LinkOutput(info.clone());
                 if let Err(e) = self.send_command(animus, action.clone()) {
                     Self::animus_command_error(animus, e)
                 } else {
@@ -338,7 +337,7 @@ impl crate::Brainstorm {
 
         // Report unlinked tracts:
         if !senders.is_empty() {
-            println!("Some Ouputs were not linked (these may go to Motors):");
+            println!("NOTE -- Some Ouputs were not linked (these may go to Motors):");
             for output in senders.iter() {
                 // "animus_name: tract_name"
                 println!("{}: {}", output.1, output.0)
@@ -346,7 +345,7 @@ impl crate::Brainstorm {
         }
 
         if !receivers.is_empty() {
-            println!("Some Inputs were not linked (these may come from Sensors):");
+            println!("NOTE -- Some Inputs were not linked (these may come from Sensors):");
             for input in receivers.iter() {
                 // "animus_name: tract_name"
                 println!("{}: {}", input.1.0, input.0)

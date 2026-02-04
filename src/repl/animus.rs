@@ -9,7 +9,8 @@ use clap::{ Parser, Subcommand };
 use clap_repl::{ ClapEditor, ReadCommandOutput };
 use clap_repl::reedline::{ DefaultPrompt, DefaultPromptSegment };
 
-use animusd_lib::protocol::Action;
+use animusd_lib::protocol::{ Action, Outcome };
+use cajal_cx::tract::receiver::ReceiverInfo;
 
 
 #[derive(Parser)]
@@ -37,6 +38,42 @@ enum AnimusCommand {
     /// Animus must be asleep (not processing inputs).
     ListStructures,
 
+    /// List the names of all Inputs in the Complex handled by the Animus.
+    /// Animus must be asleep (not processing inputs).
+    ListInputs,
+    
+    /// List the names of all Outputs in the Complex handled by the Animus.
+    /// Animus must be asleep (not processing inputs).
+    ListOutputs,
+
+    /// Display the port address of an Input on this animus.
+    /// Animus must be asleep (not processing inputs).
+    InputAddr {
+        #[arg( help = 
+            "Provide the name of the Input to retrieve. \
+            Must be present on this animus."
+        )]
+        tract: String
+    },
+
+    /// Attempt to link an Output to an arbitrary SocketAddr.
+    /// This linkage is not checked for ReceiverInfo (unsafe), 
+    /// so only use it when you can guarantee the SocketAddr is correct.
+    /// Animus must be asleep (not processing inputs).
+    UncheckedLink {
+        #[arg( help = 
+            "Provide the name of the Output to link. \
+            Must be present on this animus."
+        )]
+        tract: String,
+
+        #[arg( help = 
+            "Provide the socket address of the IP address and port number \
+            that is used by the TractReceiver -- e.g., 0.0.0.0:0"
+        )]
+        port: std::net::SocketAddr,
+    },
+
     /// Save the state of the Complex to the associated network file.
     /// Animus must be asleep (not processing inputs).
     Save,
@@ -56,6 +93,7 @@ enum AnimusCommand {
 
     /// Return to the Brainstorm REPL.
     Back,
+
 }
 
 impl crate::Brainstorm {
@@ -91,6 +129,53 @@ impl crate::Brainstorm {
 
                 AnimusCommand::ListStructures => {
                     self.handle_command(animus, Action::ListStructures)
+                },
+
+                AnimusCommand::ListInputs => {
+                    self.handle_command(animus, Action::ListInputs)
+                },
+
+                AnimusCommand::ListOutputs => {
+                    self.handle_command(animus, Action::ListOutputs)
+                },
+
+                AnimusCommand::InputAddr { tract } => {
+
+                    let action = Action::InputInfo(tract.clone());
+                    match self.send_command(animus, action) {
+                        Err(e) => Self::animus_command_error(animus, e),
+                        Ok(..) => {
+                            match self.read_report() {
+                                Err(e) => {
+                                    // TODO
+                                },
+                                Ok(report) => {
+                                    
+                                    match report.outcome {
+                                        Outcome::Return(msg) => {
+                                            match bincode::deserialize::<ReceiverInfo>(&msg) {
+                                                Err(e) => {
+                                                    // TODO
+                                                },
+                                                Ok(info) => {
+                                                    println!("{}", info.address)
+                                                }
+                                            }
+                                        },
+
+                                        _ => { 
+                                            // TODO: Unexpected Outcome error
+                                        }
+
+                                    }
+                                }
+                            }
+                        }
+                    } 
+                },
+
+                AnimusCommand::UncheckedLink { tract, port } => {
+                    self.handle_command(animus, Action::UncheckedLink { tract, port })
                 },
 
                 AnimusCommand::Save => {
