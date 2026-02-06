@@ -2,18 +2,21 @@
 .cajal/
 ├── neuro.cfg
 ├── brainstorm/
-│   ├── config.toml
-│   └── groups/
-│       └── my_group.txt
+│   └── brainstorm.cfg
 ├── animi/
-│   └── my_network/
-│       ├── service.cfg
-│       ├── neuro.cfg
-│       ├── run/
-│       │   └── PID file, etc.
-│       └── bin/
-│           ├── my_network.nn
-│           └── animusd-my_network
+│   ├── groups/
+│   │   └── my_group
+│   ├── local/
+│   │   └── my_network/
+│   │       ├── service.cfg
+│   │       ├── neuro.cfg
+│   │       ├── run/
+│   │       │   └── PID file, etc.
+│   │       └── bin/
+│   │           ├── my_network.nn
+│   │           └── animusd-my_network
+│   └── remote/
+│       └── remote_animus
 └── saved/
     └── my_network.nn
 

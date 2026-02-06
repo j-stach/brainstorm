@@ -12,8 +12,17 @@ pub(super) fn active_animi() -> anyhow::Result<()> {
 // Print a list of all files that appear in the `animi` directory.
 pub(super) fn all_animi() -> anyhow::Result<()> {
 
-    let animi = crate::file::animi::read_animi()?.flatten();
-    for animus in animi {
+    println!("Local animi:");
+    let local_animi = crate::file::animi::read_local_animi()?.flatten();
+    for animus in local_animi {
+        let name = animus.file_name().into_string()
+            .map_err(|_| anyhow::anyhow!("Couldn't read OsString"))?;
+        println!("{}", name) 
+    }
+
+    println!("Remote animi:");
+    let remote_animi = crate::file::animi::read_remote_animi()?.flatten();
+    for animus in remote_animi {
         let name = animus.file_name().into_string()
             .map_err(|_| anyhow::anyhow!("Couldn't read OsString"))?;
         println!("{}", name) 

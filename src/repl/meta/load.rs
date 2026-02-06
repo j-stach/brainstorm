@@ -6,7 +6,7 @@ impl crate::Brainstorm {
     // Load and activate an existing but inactive animus.
     pub(super) fn load_animus(&self, animus_name: &str) -> anyhow::Result<()> {
 
-        if crate::file::animi::animus_exists(animus_name)? {
+        if crate::file::animi::local_animus_exists(animus_name)? {
 
             if !self.is_active(animus_name)? {
                 Self::launch_animus(animus_name)?;
@@ -25,7 +25,7 @@ impl crate::Brainstorm {
     // Execute the animusd service for an animus.
     fn launch_animus(animus_name: &str) -> anyhow::Result<()> {
 
-        let animus_dir = crate::file::animi::animus_dir(animus_name);
+        let animus_dir = crate::file::animi::local_animus_path(animus_name);
         let bin_path = format!("{}/bin/animusd-{}", animus_dir, animus_name);
         
         // The binary should have been made executable when it was set up.

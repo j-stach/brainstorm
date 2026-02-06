@@ -6,4 +6,5 @@ pub(crate) mod cfg;
 pub(crate) mod animi;
 pub(crate) mod saved;
 pub(crate) mod groups;
+pub(crate) mod remote;
 

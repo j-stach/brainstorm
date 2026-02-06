@@ -3,7 +3,7 @@
 
 // Read the saved networks directory.
 pub(crate) fn read_groups() -> anyhow::Result<std::fs::ReadDir> {
-    Ok(std::fs::read_dir("~/.cajal/brainstorm/groups")?)
+    Ok(std::fs::read_dir("~/.cajal/animi/groups")?)
 }
 
 // Check if a network binary with the given name exists in the `saved`` folder.
@@ -12,16 +12,15 @@ pub(crate) fn group_exists(group_name: &str) -> anyhow::Result<bool> {
 
     let exists = read_groups()?
         .flatten()
-        .any(|f| *f.file_name() == *format!("{}.txt", group_name));
+        .any(|f| f.file_name() == group_name);
 
     Ok(exists)
 }
 
 // Create a string representing the path to a group file.
 pub(crate) fn group_path(group_name: &str) -> String {
-    format!("~/.cajal/brainstorm/groups/{}.txt", group_name)
+    format!("~/.cajal/animi/groups/{}", group_name)
 }
-
 
 // Get list of animi in a group.
 // Only skips newline, doesn't check validity

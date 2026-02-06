@@ -48,7 +48,7 @@ impl crate::Brainstorm {
         let animus_name = animus_name.expect("Animus name exists");
 
         // Create animus directory
-        let animus_dir = crate::file::animi::animus_dir(&animus_name);
+        let animus_dir = crate::file::animi::local_animus_path(&animus_name);
         let animus_path = std::path::Path::new(&animus_dir);
         if !animus_path.is_dir() {
             std::fs::create_dir(animus_path)?
@@ -109,13 +109,13 @@ impl crate::Brainstorm {
     fn build_animus(animus_name: &str) -> anyhow::Result<()> {
 
         // Build the animusd executable with the features specified.
-        let animus_dir = crate::file::animi::animus_dir(&animus_name);
+        let animus_dir = crate::file::animi::local_animus_path(&animus_name);
 
         let mut cmd = std::process::Command::new("cargo");
         cmd.arg("install")
             .arg("animusd")
             // TODO Logging enabled, and other features
-            .arg("--features=animus")
+            //.arg("--features=logging")
             .arg("--root")
             .arg(&animus_dir);
 
