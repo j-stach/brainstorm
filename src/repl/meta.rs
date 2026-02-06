@@ -49,7 +49,6 @@ enum MetaCommand {
         animus: String
     },
 
-
     /// Select an active Animus to manage.
     Select {
         #[arg( help = 
@@ -68,6 +67,22 @@ enum MetaCommand {
             then submit Y for the next prompt."
         )]
         name: String
+    },
+
+    /// Register a animus running on another device, 
+    /// to be controlled by Brainstorm on this computer.
+    AddRemote {
+        #[arg( help = 
+            "Provide the name of the animus as it appears in the other filesystem.\
+            The Animus must currently be active. \n\
+            View active Animi using the `list-active` command in Brainstorm \
+            on the other device."
+        )]
+        animus: String,
+        #[arg( help = 
+            "Provide the IP address of the other device -- e.g., 1.2.3.4"
+        )]
+        ip: std::net::IpAddr,
     },
 
     /// List all Animi that are currently active on this device.
@@ -179,6 +194,32 @@ impl crate::Brainstorm {
                 MetaCommand::Group { name } => {
                     self.group_repl(&name)
                 },
+
+                MetaCommand::AddRemote { animus, ip } => {
+                    match crate::file::animi::animus_exists(&animus) {
+                        Ok(exists) => {
+                            if exists {
+                                // TODO Err: Already exists
+                            } else {
+                                // TODO
+                                // Query remote device at ip:4048
+                                // if active,
+                                if let Err(e) = crate::file::remote::write_remote_animus(&animus, ip) {
+                                    // TODO Error
+                                }
+                            }
+                        },
+                        Err(e) => {
+                            return
+                            // TODO Error
+                        }
+                    }
+                    // TODO 
+                    // if animus doesn't exist in records,
+                    // query animus at ip:4048, 
+                    // if active, 
+                    // write_remote_animus
+                }
 
             }
         });

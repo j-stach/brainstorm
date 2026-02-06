@@ -1,22 +1,19 @@
 
 # TODO for crate
 
-## Misc
+## Cleaning
+- [ ] **DRY** & cleaning
 - [ ] Reorganize modules
 - [ ] Misc `TODO` items in src comments
 - [ ] Break up `group.rs` with helper modules & functions
 - [ ] Other helper functions 
-- [ ] Errors cleaned up
+- [ ] **Error types**
 
 ## Remote animi
-- [x] Divide `animi` directory with `local` and `remote` sub-dirs
-- [x] Update file helper functions to use `local` and `animus` directories
-- [ ] `add-remote` command with `ip_addr` and `animus` fields
-- [ ] `remove-remote` command to remove animi safely/with warnings
-- [ ] `add-remote` queries animus by name at port 4048 of the IP address (animi must be started locally)
-- [ ] `add-remote` records name and IP addr in file in `remote` dir
-- [ ] Sending IP commands to remote dirs
-- [x] Link singular output by name, for motor ports and other manual alignment
+- [x] `add-remote` meta repl command with `ip_addr` and `animus` fields
+- [x] `add-remote` queries animus by name at port 4048 of the IP address (animi must be started locally)
+- [x] Records name and IP addr in file in `remote` dir
+- [ ] AnimusManager repl needs method for sending commands to remote animi using stored IP address
 
 ----
 
