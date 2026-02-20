@@ -1,6 +1,10 @@
 
 mod file;
-mod repl;
+//mod repl;
+
+mod meta;
+mod animus;
+mod group;
 
 use clap::Parser;
 use ezcfg::Config;
@@ -59,7 +63,7 @@ fn main() {
         };
 
         match Brainstorm::new(config) {
-            Ok(brainstorm) => brainstorm.meta_repl(),
+            Ok(brainstorm) => brainstorm.meta_manager(),
             Err(e) => eprintln!("{}", e),
         }
 

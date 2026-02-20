@@ -1,8 +1,6 @@
 
-//! Commands for retrieving information
-
 // Lists all animi
-pub(super) fn active_animi() -> anyhow::Result<()> {
+pub(crate) fn active_animi() -> anyhow::Result<()> {
 
     // TODO Send Query AnimusCommand with no name, wait 1 sec to collect responses
     // print list of all that respond
@@ -10,7 +8,7 @@ pub(super) fn active_animi() -> anyhow::Result<()> {
 }
 
 // Print a list of all files that appear in the `animi` directory.
-pub(super) fn all_animi() -> anyhow::Result<()> {
+pub(crate) fn all_animi() -> anyhow::Result<()> {
 
     println!("Local animi:");
     let local_animi = crate::file::animi::read_local_animi()?.flatten();
@@ -32,7 +30,7 @@ pub(super) fn all_animi() -> anyhow::Result<()> {
 }
 
 // Print a list of all network files that appear in the `saved` directory.
-pub(super) fn saved_networks() -> anyhow::Result<()> {
+pub(crate) fn saved_networks() -> anyhow::Result<()> {
 
     let saved = crate::file::saved::read_saved()?.flatten();
     for network in saved {
@@ -45,5 +43,4 @@ pub(super) fn saved_networks() -> anyhow::Result<()> {
 
     Ok(())
 }
-
 

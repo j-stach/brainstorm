@@ -1,10 +1,4 @@
 
-//! This aligns Brainstorm with the capabilities of the `animusd` protocol.
-
-mod command;
-mod report;
-
-
 use clap::{ Parser, Subcommand };
 use clap_repl::{ ClapEditor, ReadCommandOutput };
 use clap_repl::reedline::{ DefaultPrompt, DefaultPromptSegment };

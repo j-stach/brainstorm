@@ -1,10 +1,8 @@
 
-//! Generate animi for saved networks
-
 impl crate::Brainstorm {
 
     // Create a new animus setup for the given network.
-    pub(super)fn animate_network(
+    pub(crate) fn animate_network(
         &self, 
         network_name: &str,
     ) -> anyhow::Result<()> {
@@ -13,11 +11,7 @@ impl crate::Brainstorm {
             let animus_name = self.animus_setup(network_name)?;
             println!("{} was animated as {}", network_name,  animus_name);
         } else {
-            println!(
-                "Network '{}' not found! \n\
-                (TIP: Use `list-networks`)", 
-                network_name
-            );
+            println!("Network '{}' not found!", network_name);
         }
         
         Ok(())

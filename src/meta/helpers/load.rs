@@ -1,10 +1,8 @@
 
-//! Handles loading the animi and launching their executables
-
 impl crate::Brainstorm {
 
     // Load and activate an existing but inactive animus.
-    pub(super) fn load_animus(&self, animus_name: &str) -> anyhow::Result<()> {
+    pub(crate) fn load_animus(&self, animus_name: &str) -> anyhow::Result<()> {
 
         if crate::file::animi::local_animus_exists(animus_name)? {
 
@@ -41,5 +39,4 @@ impl crate::Brainstorm {
     }
 
 }
-
 
