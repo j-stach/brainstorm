@@ -173,14 +173,14 @@ impl crate::Brainstorm {
     }
 
     // Launch an animus so it can begin receiving commands
-    fn load(self, animus: &str) {
+    fn load(&self, animus: &str) {
         if let Err(e) = self.load_animus(animus) {
             Self::meta_command_error("load", e)
         }
     }
 
     // Select an active (loaded) animus to issue commands
-    fn select(self, animus: &str) {
+    fn select(&self, animus: &str) {
         let is_active = self.is_active(&animus);
 
         if let Err(e) = is_active {

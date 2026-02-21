@@ -5,10 +5,8 @@
 - [ ] Printable error types with `thiserror` to replace `anyhow`
 
 ## Cleaning
-- [x] Reorganize modules
 - [ ] Misc `TODO` items in src comments
-- [x] Break up `group.rs` with helper modules & functions
-- [ ] Other helper functions 
+- [x] Other helper functions for `autolink.rs`
 
 ## Remote animi
 - [ ] AnimusManager repl needs method for sending commands to remote animi using stored IP address

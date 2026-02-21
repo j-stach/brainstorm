@@ -93,7 +93,7 @@ enum AnimusCommand {
 impl crate::Brainstorm {
 
     // Spawns an inner REPL for sending animus commands.
-    pub(super) fn animus_repl(&self, animus: &str) {
+    pub(crate) fn animus_manager(&self, animus: &str) {
 
         println!("Selected animus '{}'", animus);
 
@@ -103,71 +103,23 @@ impl crate::Brainstorm {
             ..DefaultPrompt::default()
         };
 
-        let mut inner_repl = ClapEditor::<AnimusManagerCli>::builder()
+        let mut repl = ClapEditor::<AnimusManagerCli>::builder()
             .with_prompt(Box::new(prompt))
             .build();
 
-        // Execute commands:
-        loop { match inner_repl.read_command() {
+        // NOTE Uses a different pattern from MetaCli so it can break out
+        loop { match repl.read_command() {
             ReadCommandOutput::Command(cli) => match cli.command {
                 
                 AnimusCommand::Back => { break },
 
-                AnimusCommand::Name => {
-                    self.handle_command(animus, Action::Name)
-                },
-
-                AnimusCommand::Version => {
-                    self.handle_command(animus, Action::Version)
-                },
-
-                AnimusCommand::ListStructures => {
-                    self.handle_command(animus, Action::ListStructures)
-                },
-
-                AnimusCommand::ListInputs => {
-                    self.handle_command(animus, Action::ListInputs)
-                },
-
-                AnimusCommand::ListOutputs => {
-                    self.handle_command(animus, Action::ListOutputs)
-                },
-
-                AnimusCommand::InputAddr { tract } => {
-
-                    let action = Action::InputInfo(tract.clone());
-                    match self.send_command(animus, action) {
-                        Err(e) => Self::animus_command_error(animus, e),
-                        Ok(..) => {
-                            match self.read_report() {
-                                Err(e) => {
-                                    // TODO
-                                },
-                                Ok(report) => {
-                                    
-                                    match report.outcome {
-                                        Outcome::Return(msg) => {
-                                            match bincode::deserialize::<ReceiverInfo>(&msg) {
-                                                Err(e) => {
-                                                    // TODO
-                                                },
-                                                Ok(info) => {
-                                                    println!("{}", info.address)
-                                                }
-                                            }
-                                        },
-
-                                        _ => { 
-                                            // TODO: Unexpected Outcome error
-                                        }
-
-                                    }
-                                }
-                            }
-                        }
-                    } 
-                },
-
+                AnimusCommand::Name => self.handle_command(animus, Action::Name),
+                AnimusCommand::Version => self.handle_command(animus, Action::Version),
+                AnimusCommand::ListStructures => self.handle_command(animus, Action::ListStructures),
+                AnimusCommand::ListInputs => self.handle_command(animus, Action::ListInputs),
+                AnimusCommand::ListOutputs => self.handle_command(animus, Action::ListOutputs),
+                AnimusCommand::InputAddr { tract } => self.animus_input_info(animus, &tract),
+                
                 AnimusCommand::UncheckedLink { tract, port } => {
                     self.handle_command(animus, Action::UncheckedLink { tract, port })
                 },
@@ -177,21 +129,10 @@ impl crate::Brainstorm {
                     self.handle_command(animus, Action::Save)
                 },
 
-                AnimusCommand::Wake => {
-                    self.handle_command(animus, Action::Wake)
-                },
-
-                AnimusCommand::Sleep => {
-                    self.handle_command(animus, Action::Sleep)
-                },
-
-                AnimusCommand::Status => {
-                    self.handle_command(animus, Action::Status)
-                },
-
-                AnimusCommand::Terminate => {
-                    self.handle_command(animus, Action::Terminate)
-                },
+                AnimusCommand::Wake => self.handle_command(animus, Action::Wake),
+                AnimusCommand::Sleep =>  self.handle_command(animus, Action::Sleep),
+                AnimusCommand::Status => self.handle_command(animus, Action::Status),
+                AnimusCommand::Terminate => self.handle_command(animus, Action::Terminate),
             },
 
             ReadCommandOutput::EmptyLine => {/* Continue */},
@@ -202,6 +143,42 @@ impl crate::Brainstorm {
             _ => {/* Continue */}
 
         }}
+    }
+
+    fn animus_input_info(&self, animus: &str, tract: &str) {
+
+        let action = Action::InputInfo(tract.to_string());
+
+        match self.send_command(animus, action) {
+            Err(e) => Self::animus_command_error(animus, e),
+            Ok(..) => {
+                match self.read_report() {
+                    Err(e) => {
+                        // TODO
+                    },
+                    Ok(report) => {
+                        
+                        match report.outcome {
+                            Outcome::Return(msg) => {
+                                match bincode::deserialize::<ReceiverInfo>(&msg) {
+                                    Err(e) => {
+                                        // TODO
+                                    },
+                                    Ok(info) => {
+                                        println!("{}", info.address)
+                                    }
+                                }
+                            },
+
+                            _ => { 
+                                // TODO: Unexpected Outcome error
+                            }
+
+                        }
+                    }
+                }
+            }
+        } 
     }
 
     pub(crate) fn handle_command(&self, animus: &str, action: Action) {
