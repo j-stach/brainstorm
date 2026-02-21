@@ -3,7 +3,7 @@ pub(crate) fn remote_animus_path(name: &str) -> String {
     format!("~/.cajal/animi/remote/{}", name)
 }
 
-pub(crate) fn read_remote_animus(name: &str) -> anyhow::Result<std::net::IpAddr> {
+pub(crate) fn remote_animus_ip(name: &str) -> anyhow::Result<std::net::IpAddr> {
     let path = remote_animus_path(name);
     match std::fs::read_to_string(path) {
         Ok(addr) => {

@@ -198,6 +198,8 @@ impl crate::Brainstorm {
         if let Err(e) = exists {
             return Self::meta_command_error("select", e)
         } else if !exists.expect("Checked above") {
+            // NOTE Continues with warning, in case of emergency.
+            // For example, recovery after accidental erasure or file corruption.
             println!("WARN: '{}' is unregistered", &animus)
         }
 
@@ -210,19 +212,21 @@ impl crate::Brainstorm {
         match crate::file::animi::animus_exists(&animus) {
             Ok(exists) => {
                 if exists {
-                    // TODO Err: Already exists
+                    return Self::meta_command_error(
+                        "add-remote", 
+                        anyhow::anyhow!("Animus '{}' already exists", &animus)
+                    )
                 } else {
                     // TODO
                     // Query remote device at ip:4048
                     // if active,
                     if let Err(e) = crate::file::remote::write_remote_animus(&animus, ip) {
-                        // TODO Error
+                        return Self::meta_command_error("add-remote", e)
                     }
                 }
             },
             Err(e) => {
-                return
-                // TODO Error
+                return Self::meta_command_error("add-remote", e)
             }
         }
     }

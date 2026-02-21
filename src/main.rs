@@ -44,7 +44,6 @@ fn main() {
 
     if args.setup == true {
 
-        // Set up the directory structure:
         if let Err(e) = file::setup::directory_setup() {
             println!("Error creating framework directory: {}", e);
             return

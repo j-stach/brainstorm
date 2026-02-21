@@ -17,6 +17,5 @@ ezcfg = "0.1.0"
 bincode = "1.3.3"
 animusd-lib = { path = "/home/jordan/projs/cajal-framework/animusd-lib" }
 cajal-cx = { path = "/home/jordan/projs/cajal-framework/cajal-cx" }
-thiserror = "2.0.18"
 
 

@@ -2,16 +2,16 @@
 # TODO for crate
 
 ## Error Types
-- [ ] Printable error types with `thiserror` to replace `anyhow`
+- [ ] ~Printable error types with `thiserror` to replace `anyhow`~ Not necessary
+- [ ] Just need a section for common strings/display org
 
 ## Cleaning
 - [ ] Misc `TODO` items in src comments
-- [x] Other helper functions for `autolink.rs`
 
 ## Remote animi
 - [ ] AnimusManager repl needs method for sending commands to remote animi using stored IP address
 - [ ] Select needs to differentiate between local and remote
-- [ ] send_command entirely new  
+- [ ] `send_command` entirely new approach
 
 ----
 

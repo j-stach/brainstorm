@@ -118,7 +118,6 @@ dependencies = [
  "clap",
  "clap-repl",
  "ezcfg",
- "thiserror 2.0.18",
 ]
 
 [[package]]

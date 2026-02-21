@@ -97,15 +97,7 @@ impl crate::Brainstorm {
 
         println!("Selected animus '{}'", animus);
 
-        // Set the prompt appearance
-        let prompt = DefaultPrompt {
-            left_prompt: DefaultPromptSegment::Basic(animus.to_owned()),
-            ..DefaultPrompt::default()
-        };
-
-        let mut repl = ClapEditor::<AnimusManagerCli>::builder()
-            .with_prompt(Box::new(prompt))
-            .build();
+        let mut repl = Self::animus_repl_setup(animus);
 
         // NOTE Uses a different pattern from MetaCli so it can break out
         loop { match repl.read_command() {
@@ -145,46 +137,24 @@ impl crate::Brainstorm {
         }}
     }
 
-    fn animus_input_info(&self, animus: &str, tract: &str) {
+    fn animus_repl_setup(animus: &str) -> ClapEditor<AnimusManagerCli> {
 
-        let action = Action::InputInfo(tract.to_string());
+        let prompt = DefaultPrompt {
+            left_prompt: DefaultPromptSegment::Basic(animus.to_owned()),
+            ..DefaultPrompt::default()
+        };
 
-        match self.send_command(animus, action) {
-            Err(e) => Self::animus_command_error(animus, e),
-            Ok(..) => {
-                match self.read_report() {
-                    Err(e) => {
-                        // TODO
-                    },
-                    Ok(report) => {
-                        
-                        match report.outcome {
-                            Outcome::Return(msg) => {
-                                match bincode::deserialize::<ReceiverInfo>(&msg) {
-                                    Err(e) => {
-                                        // TODO
-                                    },
-                                    Ok(info) => {
-                                        println!("{}", info.address)
-                                    }
-                                }
-                            },
+        let repl = ClapEditor::<AnimusManagerCli>::builder()
+            .with_prompt(Box::new(prompt))
+            .build();
 
-                            _ => { 
-                                // TODO: Unexpected Outcome error
-                            }
-
-                        }
-                    }
-                }
-            }
-        } 
+        repl
     }
 
     pub(crate) fn handle_command(&self, animus: &str, action: Action) {
 
         if let Err(e) = self.send_command(animus, action.clone()) {
-            Self::animus_command_error(animus, e);
+            Self::animus_command_error(animus, e)
         } else {
             if let Err(e) = self.share_response() {
                 Self::animus_response_error(animus, action, e)
@@ -213,5 +183,35 @@ impl crate::Brainstorm {
         );
         eprintln!("{}", e);
     }
+
+    fn animus_input_info(&self, animus: &str, tract: &str) {
+
+        let action = Action::InputInfo(tract.to_string());
+        use bincode::deserialize as de;
+
+        match self.send_command(animus, action.clone()) {
+            Err(e) => Self::animus_command_error(animus, e),
+            Ok(..) => match self.read_report() {
+                Err(e) => Self::animus_response_error(animus, action, e),
+                Ok(report) => match report.outcome {
+
+                    Outcome::Return(msg) => match de::<ReceiverInfo>(&msg) {
+                        Err(e) => Self::animus_response_error(
+                            animus, action, 
+                            anyhow::anyhow!("Failed to parse report: {}", e)
+                        ),
+                        Ok(info) => println!("{}", info.address),
+                    },
+
+                    _ => Self::animus_response_error(
+                        animus, action, 
+                        anyhow::anyhow!("Unexpected Outcome variant")
+                    ),
+
+                }
+            }
+        } 
+    }
+
 }
 
