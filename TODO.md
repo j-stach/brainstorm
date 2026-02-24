@@ -1,17 +1,18 @@
 
 # TODO for crate
 
+## Remote animi
+- [ ] ~`Select` needs to differentiate between local and remote, storing IP address~
+- [x] `handle_command` & `send_command` searches for animus in local and remote
+- [x] Differentiate between `send_local_command` and `send_remote_command`
+- [x] `animusd` will need to store controller IP addr, 
+- [x] or else `animusd` can auto-respond to the IP addr where the command was received from
+
 ## Error Types
-- [ ] ~Printable error types with `thiserror` to replace `anyhow`~ Not necessary
 - [ ] Just need a section for common strings/display org
 
 ## Cleaning
 - [ ] Misc `TODO` items in src comments
-
-## Remote animi
-- [ ] AnimusManager repl needs method for sending commands to remote animi using stored IP address
-- [ ] Select needs to differentiate between local and remote
-- [ ] `send_command` entirely new approach
 
 ----
 

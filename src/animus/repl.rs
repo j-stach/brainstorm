@@ -99,7 +99,7 @@ impl crate::Brainstorm {
 
         let mut repl = Self::animus_repl_setup(animus);
 
-        // NOTE Uses a different pattern from MetaCli so it can break out
+        // NOTE Uses a different pattern from MetaCli so we can break 
         loop { match repl.read_command() {
             ReadCommandOutput::Command(cli) => match cli.command {
                 
@@ -153,7 +153,8 @@ impl crate::Brainstorm {
 
     pub(crate) fn handle_command(&self, animus: &str, action: Action) {
 
-        if let Err(e) = self.send_command(animus, action.clone()) {
+        // TODO If local, else if remote send_remote_command,
+        if let Err(e) = self.send_local_command(animus, action.clone()) {
             Self::animus_command_error(animus, e)
         } else {
             if let Err(e) = self.share_response() {
@@ -189,7 +190,7 @@ impl crate::Brainstorm {
         let action = Action::InputInfo(tract.to_string());
         use bincode::deserialize as de;
 
-        match self.send_command(animus, action.clone()) {
+        match self.send_local_command(animus, action.clone()) {
             Err(e) => Self::animus_command_error(animus, e),
             Ok(..) => match self.read_report() {
                 Err(e) => Self::animus_response_error(animus, action, e),

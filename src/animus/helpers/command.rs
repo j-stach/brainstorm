@@ -1,6 +1,7 @@
 
-
 use animusd_lib::protocol::{ Command, Action, Report, Outcome };
+
+use crate::file::{ animi::*, remote::* };
 
 impl crate::Brainstorm {
 
@@ -19,7 +20,6 @@ impl crate::Brainstorm {
 
         // TODO: If no response (timeout), interpret as false?
 
-        // TODO Ensure that "Listen" loop does not interfere, by checking name?
         match report.outcome {
             Outcome::Success => Ok(true),
             _ => Ok(false),
@@ -39,22 +39,46 @@ impl crate::Brainstorm {
         let (len, _) = self.socket.recv_from(&mut buf)?;
         let report = Report::decode(&buf[..len])?;
 
-        // TODO Ensure that "Listen" loop does not interfere, by checking name?
         match report.outcome {
             Outcome::Success => Ok(true),
             _ => Ok(false),
         }
     }
 
-    // Send command to associated IP address @ port 4048.
-    // TODO: Ensure animusd listens to the correct IP address for commands,
-    // TODO: or else, ensure that different IP can be linked thru brainstorm.
-    // Returns an error if the network connection could not be established.
+    // Send command to local or remote animus
     pub(crate) fn send_command(&self, animus: &str, action: Action) -> anyhow::Result<()> {
+
+        if local_animus_exists(animus)? {
+            self.send_local_command(animus, action)
+        } else if remote_animus_exists(animus)? {
+            self.send_remote_command(animus, action)
+        } else {
+            Err(anyhow::anyhow!("Animus '{}' does not exist", animus))
+        }
+    }
+
+    // Returns an error if the network connection could not be established.
+    pub(crate) fn send_local_command(&self, animus: &str, action: Action) -> anyhow::Result<()> {
 
         let command = Command::new(animus, action);
         self.socket.send(&command.encode()?)?;
 
         Ok(())
     }
+
+    // Send command to associated IP address @ port 4048.
+    pub(crate) fn send_remote_command(&self, animus: &str, action: Action) -> anyhow::Result<()> {
+
+        let ip_addr = remote_animus_ip(animus)?;
+        let remote = std::net::SocketAddr::new(ip_addr, 4048);
+
+        let command = Command::new(animus, action);
+        self.socket.send_to(&command.encode()?, remote)?;
+
+        // animus recieves using recv_from
+        // animus reports to this socket's IP
+
+        Ok(())
+    }
+
 }
