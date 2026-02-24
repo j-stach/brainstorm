@@ -15,14 +15,17 @@ impl crate::Brainstorm {
         self.send_command(animus, Action::Query)?;
 
         let mut buf = [0; 1023];
-        let (len, _) = self.socket.recv_from(&mut buf)?;
-        let report = Report::decode(&buf[..len])?;
+        // If no response (timeout), interpret as false
+        if let Ok((len, _)) = self.socket.recv_from(&mut buf) {
+            let report = Report::decode(&buf[..len])?;
 
-        // TODO: If no response (timeout), interpret as false?
 
-        match report.outcome {
-            Outcome::Success => Ok(true),
-            _ => Ok(false),
+            match report.outcome {
+                Outcome::Success => Ok(true),
+                _ => Ok(false),
+            }
+        } else {
+            Ok(false)
         }
     }
 
