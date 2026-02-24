@@ -10,17 +10,26 @@ pub(crate) fn valid_animus_name(name: &str) -> bool {
 }
 
 pub(crate) fn local_animus_path(name: &str) -> String {
-    format!("~/.cajal/animi/local/{}", name)
+    let home = std::env::home_dir()
+        .expect("Find user home directory");
+    let local = &home.join(".cajal").join("animi").join("local");
+    format!("{}/{}", local.display(), name)
 }
 
 // Read the animus directory.
 pub(crate) fn read_local_animi() -> anyhow::Result<std::fs::ReadDir> {
-    Ok(std::fs::read_dir("~/.cajal/animi/local")?)
+    let home = std::env::home_dir()
+        .expect("Find user home directory");
+    let local = &home.join(".cajal").join("animi").join("local");
+    Ok(std::fs::read_dir(local)?)
 }
 
 // Read the animus directory.
 pub(crate) fn read_remote_animi() -> anyhow::Result<std::fs::ReadDir> {
-    Ok(std::fs::read_dir("~/.cajal/animi/remote")?)
+    let home = std::env::home_dir()
+        .expect("Find user home directory");
+    let remote = &home.join(".cajal").join("animi").join("remote");
+    Ok(std::fs::read_dir(remote)?)
 }
 
 // Check if local data exists for an animus with the given name.

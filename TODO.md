@@ -1,15 +1,8 @@
 
 # TODO for crate
 
-## Remote animi
-- [ ] ~`Select` needs to differentiate between local and remote, storing IP address~
-- [x] `handle_command` & `send_command` searches for animus in local and remote
-- [x] Differentiate between `send_local_command` and `send_remote_command`
-- [x] `animusd` will need to store controller IP addr, 
-- [x] or else `animusd` can auto-respond to the IP addr where the command was received from
-
 ## Error Types
-- [ ] Just need a section for common strings/display org
+- [ ] Just need a section for common strings/display org?
 
 ## Cleaning
 - [ ] Misc `TODO` items in src comments

@@ -1,14 +1,12 @@
 
-use std::path::Path;
-
-use ezcfg::Config;
-use super::cfg::BrainstormConfig;
-
 // Call expression per directory 
 macro_rules! per_missing_dir {
     ($fn:expr) => {{
 
-        let root = Path::new("~/.cajal");       // Framework directory
+        let home = std::env::home_dir()
+            .expect("Find user home directory");
+
+        let root = &home.join(".cajal");        // Framework directory
 
         let animi = &root.join("animi");        // Animus records
         let remote = &animi.join("remote");     // Remote animi files
@@ -21,7 +19,7 @@ macro_rules! per_missing_dir {
         let directories = vec![root, animi, remote, local, groups, saved, brain];
 
         for dir in directories {
-            if !dir.is_dir() {
+            if !dir.exists() {
                 $fn(dir);
             }
         }
@@ -34,19 +32,14 @@ pub(crate) fn directory_setup() -> anyhow::Result<()> {
     per_missing_dir!(|d| std::fs::create_dir(d)
         .expect("Permission to create dir"));
 
-    // Generate a default config file if none exists
-    let config = Path::new(&BrainstormConfig::PATH);
-    if !config.exists() {
-        BrainstormConfig::default().write()?;
-    }
-
     Ok(())
 }
 
 // Are all directories in place?
 pub(crate) fn setup_ok() -> bool {
-    per_missing_dir!(|_| return false );
-    true
+    let mut ok = true;
+    per_missing_dir!(|_| ok = false); // LOL does this work?
+    ok
 }
 
 

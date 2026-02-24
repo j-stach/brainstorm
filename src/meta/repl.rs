@@ -25,7 +25,20 @@ struct MetaCli {
 #[derive(Subcommand, Debug)]
 enum MetaCommand {
 
-    /// Create a new Animus for the network provided, then activate it.
+    /// Run setup if this is your first time using Brainstorm
+    /// and you have not already run `brainstorm --setup`.
+    Setup,
+
+    /// List all Animi that are currently active on this device.
+    ListActive,
+
+    /// List all Animi that have data saved in ~/.cajal/animi/
+    ListAll,
+
+    /// List all `.nn` networks found in ~/.cajal/saved/
+    ListNetworks,
+
+    /// Create a new Animus for a network.
     Animate {
         #[arg( help = 
             "Provide the name of the `.nn` network to be animated. \
@@ -81,15 +94,6 @@ enum MetaCommand {
         ip: std::net::IpAddr,
     },
 
-    /// List all Animi that are currently active on this device.
-    ListActive,
-
-    /// List all Animi that have data saved in ~/.cajal/animi/
-    ListAll,
-
-    /// List all `.nn` networks found in ~/.cajal/saved/
-    ListNetworks,
-
     /// Exit Brainstorm. (This will not affect any active Animi.)
     Quit, Exit,
 }
@@ -139,6 +143,15 @@ impl crate::Brainstorm {
                 MetaCommand::Group { name } => self.group_manager(&name),
 
                 MetaCommand::AddRemote { animus, ip } => Self::add_remote(&animus, ip),
+
+                MetaCommand::Setup => {
+                    if ! file::setup::setup_ok() {
+                        if let Err(e) = file::setup::directory_setup() {
+                            println!("ERROR: Directory setup failed");
+                            eprintln!("{}", e)
+                        }
+                    }
+                },
             }
         });
     }

@@ -3,7 +3,10 @@
 
 // Read the saved networks directory.
 pub(crate) fn read_groups() -> anyhow::Result<std::fs::ReadDir> {
-    Ok(std::fs::read_dir("~/.cajal/animi/groups")?)
+    let home = std::env::home_dir()
+        .expect("Find user home directory");
+    let groups = &home.join(".cajal").join("animi").join("groups");
+    Ok(std::fs::read_dir(groups)?)
 }
 
 // Check if a network binary with the given name exists in the `saved`` folder.
@@ -19,7 +22,10 @@ pub(crate) fn group_exists(group_name: &str) -> anyhow::Result<bool> {
 
 // Create a string representing the path to a group file.
 pub(crate) fn group_path(group_name: &str) -> String {
-    format!("~/.cajal/animi/groups/{}", group_name)
+    let home = std::env::home_dir()
+        .expect("Find user home directory");
+    let groups = &home.join(".cajal").join("animi").join("groups");
+    format!("{}/{}", groups.display(), group_name)
 }
 
 // Get list of animi in a group.

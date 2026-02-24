@@ -117,7 +117,6 @@ dependencies = [
  "cajal-cx",
  "clap",
  "clap-repl",
- "ezcfg",
 ]
 
 [[package]]
@@ -303,12 +302,6 @@ dependencies = [
  "libc",
  "windows-sys 0.59.0",
 ]
-
-[[package]]
-name = "ezcfg"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0eb7a66d5402cb1cba625e4025e46972f99aaf7c27ad59b6710bfd41434ac2c2"
 
 [[package]]
 name = "fd-lock"

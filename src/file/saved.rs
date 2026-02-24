@@ -3,7 +3,10 @@
 
 // Read the saved networks directory.
 pub(crate) fn read_saved() -> anyhow::Result<std::fs::ReadDir> {
-    Ok(std::fs::read_dir("~/.cajal/saved")?)
+    let home = std::env::home_dir()
+        .expect("Find user home directory");
+    let saved = &home.join(".cajal").join("saved");
+    Ok(std::fs::read_dir(saved)?)
 }
 
 // Check if a network binary with the given name exists in the `saved`` folder.
@@ -19,6 +22,9 @@ pub(crate) fn network_exists(network_name: &str) -> anyhow::Result<bool> {
 
 // Create a string representing the path to an animus's dedicated directory.
 pub(crate) fn network_path(network_name: &str) -> String {
-    format!("~/.cajal/saved/{}.nn", network_name)
+    let home = std::env::home_dir()
+        .expect("Find user home directory");
+    let saved = &home.join(".cajal").join("saved");
+    format!("{}/{}.nn", saved.display(), network_name)
 }
 

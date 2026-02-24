@@ -1,6 +1,9 @@
 
 pub(crate) fn remote_animus_path(name: &str) -> String {
-    format!("~/.cajal/animi/remote/{}", name)
+    let home = std::env::home_dir()
+        .expect("Find user home directory");
+    let remote = &home.join(".cajal").join("animi").join("remote");
+    format!("{}/{}", remote.display(), name)
 }
 
 pub(crate) fn remote_animus_ip(name: &str) -> anyhow::Result<std::net::IpAddr> {

@@ -1,13 +1,11 @@
 
 mod file;
-//mod repl;
 
 mod meta;
 mod animus;
 mod group;
 
 use clap::Parser;
-use ezcfg::Config;
 
 // Singleton handling global program resources
 pub(crate) struct Brainstorm {
@@ -15,7 +13,7 @@ pub(crate) struct Brainstorm {
 } 
 
 impl Brainstorm {
-    fn new(_config: file::cfg::BrainstormConfig) -> anyhow::Result<Self> {
+    fn new() -> anyhow::Result<Self> {
 
         Ok(Brainstorm {
             socket: std::net::UdpSocket::bind("127.0.0.1:4048")?,
@@ -56,12 +54,7 @@ fn main() {
 
     if file::setup::setup_ok() {
 
-        let config = match file::cfg::BrainstormConfig::read() {
-            Ok(config) => config,
-            Err(_) => file::cfg::BrainstormConfig::default(),
-        };
-
-        match Brainstorm::new(config) {
+        match Brainstorm::new() {
             Ok(brainstorm) => brainstorm.meta_manager(),
             Err(e) => eprintln!("{}", e),
         }
